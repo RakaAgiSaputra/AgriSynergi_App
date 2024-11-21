@@ -18,22 +18,21 @@ AgriSynergi_App adalah aplikasi berbasis Android yang dirancang untuk mendukung 
 - **Retrofit**: Untuk integrasi API.
 
 ## 📂 Struktur Proyek
-AgriSynergi_App/
-├── app/ \n
-│ ├── src/ \n 
-│ │ ├── main/ 
-│ │ │ ├── java/com/example/agrisynergi_mobile/
-│ │ │ │ ├── data # dummy data
-│ │ │ │ ├── pages/ # Halaman utama aplikasi 
-│ │ │ │ ├── navigation/ # Navigasi aplikasi 
-│ │ │ │ ├── User/ # Fitur profil pengguna
-│ │ │ ├── res/ 
-│ │ │ │ ├── drawable/ 
-# Ikon dan gambar 
-│ │ │ │ ├── layout/ # Layout XML (jika ada) 
-│ │ │ │ ├── values/ # Warna, string, dan tema 
-├── build.gradle ├── settings.gradle.kts 
-└── README.md
+AgriSynergi_App/<br>
+├── app/ <br>
+│ ├── src/<br>
+│ │ ├── main/<br>
+│ │ │ ├── java/com/example/agrisynergi_mobile/<br>
+│ │ │ │ ├── data # dummy data<br>
+│ │ │ │ ├── pages/ # Halaman utama aplikasi<br> 
+│ │ │ │ ├── navigation/ # Navigasi aplikasi <br>
+│ │ │ │ ├── User/ # Fitur profil pengguna<br>
+│ │ │ ├── res/ <br>
+│ │ │ │ ├── drawable/ <br>
+│ │ │ │ ├── layout/ # Layout XML <br>
+│ │ │ │ ├── values/ # Warna, string, dan tema <br>
+├── build.gradle ├── settings.gradle.kts <br>
+└── README.md<br>
 
 
 ## 🚀 Cara Menggunakan
