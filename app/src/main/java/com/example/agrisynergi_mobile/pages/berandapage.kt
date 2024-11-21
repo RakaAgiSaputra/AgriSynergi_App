@@ -133,36 +133,6 @@ fun ContentScreen(modifier: Modifier = Modifier) {
                 )
             }
         }
-        item {
-            HorizontalPager(
-                count = webinarList.size,
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(250.dp)
-            ) { page ->
-                Box(
-                    modifier = Modifier
-                        .width(350.dp)
-                        .padding(8.dp)
-                        .shadow(8.dp, shape = RoundedCornerShape(16.dp), clip = true)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.Transparent),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = webinarList[page]),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(220.dp)
-                            .padding(vertical = 2.dp),
-                        contentScale = ContentScale.Crop
-                    )
-
-                }
-            }
-        }
     }
 }
 
