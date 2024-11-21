@@ -1,5 +1,6 @@
 package com.example.agrisynergi_mobile
 
+import android.content.Intent
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -13,12 +14,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.agrisynergi_mobile.User.AboutUsActivity
+import com.example.agrisynergi_mobile.User.AddDiscountCodeActivity
+import com.example.agrisynergi_mobile.User.CheckoutActivity
+import com.example.agrisynergi_mobile.User.DoneCheckoutActivity
+import com.example.agrisynergi_mobile.User.DropshipperCatalog2Activity
+import com.example.agrisynergi_mobile.User.DropshipperCatalogActivity
+import com.example.agrisynergi_mobile.User.EditProfileActivity
+import com.example.agrisynergi_mobile.User.MyFavorite2Activity
+import com.example.agrisynergi_mobile.User.MyFavoriteActivity
+import com.example.agrisynergi_mobile.User.OrderHistoryActivity
+import com.example.agrisynergi_mobile.User.PostingActivity
+import com.example.agrisynergi_mobile.User.StartSellingActivity
+import com.example.agrisynergi_mobile.User.UserProfileScreen
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.pages.DetailMarketScreen
@@ -67,13 +82,21 @@ fun AgrisynergiApp(
                 ForumScreen(navController = navController)
             }
             composable(Screen.User.route) {
+                UserProfileScreen {
+                    option ->
+                    when (option) {
+                        "Edit Profile" -> {
+                        }
+                    }}
+
 
             }
 
-            }
+
         }
-    }
 
+    }
+}
 
 @Composable
 private fun BottomNavigationBar(
