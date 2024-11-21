@@ -53,41 +53,6 @@ fun MainScreen(navHostController: NavHostController, contentPadding: PaddingValu
     var selectedIndex by remember { mutableStateOf(0) }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { },
-                navigationIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.iconagrisynergy),
-                        contentDescription = "Logo Aplikasi",
-                        modifier = Modifier.size(60.dp).padding(top = 0.dp),
-                        tint = Color.Unspecified
-                    )
-                },
-                actions = {
-                    IconButton(onClick = {
-                        navHostController.navigate("notificationsPage")
-                    }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.iconnotification),
-                            contentDescription = "Notifikasi",
-                            modifier = Modifier.size(29.dp),
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = Color(0xFF13382C),
-                    navigationIconContentColor = Color.White,
-                    titleContentColor = Color.White
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .windowInsetsPadding(WindowInsets(top = 0))
-            )
-        },
-
         content = { innerPadding ->
             ContentScreen(
                 modifier = Modifier

@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +31,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -48,6 +50,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -91,9 +94,11 @@ fun MapsScreen(navController: NavHostController) {
         // Lapisan bar atas
         mapsTopBar(
             onBackClick = { navController.navigateUp() },
-            onSearchClick = { query ->          },
+            onSearchClick = { query -> /* Handle query if needed */ },
+            mapView = mapView, // Pass mapView
             modifier = Modifier.zIndex(1f)
         )
+
 
         // Tombol Zoom
         ZoomControls(
@@ -157,6 +162,8 @@ fun maps(
                         return "$baseUrl$zoom/$x/$y$mImageFilenameEnding"
                     }
                 }
+                // agar maps berwarna hitam
+                this.tileProvider.tileSource = darkMatterTileSource
 
                 controller.setZoom(15.0)
                 controller.setCenter(GeoPoint(-7.2906, 112.7277))
@@ -170,6 +177,7 @@ fun maps(
         modifier = modifier.fillMaxSize()
     )
 }
+
 
 //Pengaturan marking lokasi petani jagung
 fun markLocation(mapView: MapView, onMarkerClick: (GeoPoint) -> Unit) {
@@ -414,8 +422,6 @@ fun BottomSheetMarking(
                                 )
                             )
                         }
-
-
                     }
                 }
             }
@@ -459,84 +465,86 @@ fun ZoomControls(onZoomIn: () -> Unit, onZoomOut: () -> Unit, modifier: Modifier
 fun mapsTopBar(
     onBackClick: () -> Unit,
     onSearchClick: (String) -> Unit,
+    mapView: MapView?,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var searchQuery by remember { mutableStateOf("") }
+
     TopAppBar(
         backgroundColor = Color.Transparent,
-//        contentColor = Color.White,
-        elevation = 4.dp,
-        modifier = modifier
+        modifier = modifier.padding(4.dp),
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 5.dp),
-            verticalAlignment = Alignment.CenterVertically // Pastikan elemen sejajar vertikal
+                .width(IntrinsicSize.Max),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             IconButton(onClick = onBackClick) {
                 Icon(
-                    painter = painterResource(id = R.drawable.iconbackmaps),
+                    painter = painterResource(id = R.drawable.iconback),
                     contentDescription = "Back",
-                    modifier = Modifier.size(50.dp),
-                    tint = Color.Unspecified
+                    modifier = Modifier.size(45.dp),
+                    tint = Color.White
                 )
             }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            var searchQuery by remember { mutableStateOf("") }
             TextField(
                 value = searchQuery,
-                onValueChange = {
-                    searchQuery = it
-                    if (it.isNotEmpty()) {
+                onValueChange = { query ->
+                    searchQuery = query
+                    if (query.isNotEmpty()) {
                         val geocoder = android.location.Geocoder(context)
                         try {
-                            val addresses = geocoder.getFromLocationName(it, 1)
-                            if (addresses != null && addresses.isNotEmpty()) {
+                            val addresses = geocoder.getFromLocationName(query, 1)
+                            if (!addresses.isNullOrEmpty()) {
                                 val address = addresses[0]
-                                val point = GeoPoint(address.latitude, address.longitude)
+                                val newLocation = GeoPoint(address.latitude, address.longitude)
+                                mapView?.controller?.apply {
+                                    setCenter(newLocation)
+                                    setZoom(15.0)
+                                }
+                                onSearchClick(query)
+                            } else {
+                                Toast.makeText(context, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
                             }
                         } catch (e: Exception) {
-                            Toast.makeText(context, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 },
-                placeholder = { Text(text = "Cari lokasi...", color = Color.Gray) }, // Warna placeholder kontras
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
+                    .height(50.dp),
+                placeholder = {
+                    Text(
+                        text = "Search",
+                        color = Color.White
+                    )
+                },
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color(0xFF5B8C51),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    placeholderColor = Color.Gray
+                    textColor = Color.White
                 ),
+                shape = RoundedCornerShape(20.dp),
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Filled.Search,
                         contentDescription = "Search Icon",
-                        modifier = Modifier.size(50.dp),
                         tint = Color.White
                     )
                 },
-                trailingIcon = {
-                    IconButton(onClick = {  }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.iconfilter),
-                            contentDescription = "Filter Maps",
-                            modifier = Modifier.size(50.dp),
-                            tint = Color.White
-                        )
-                    }
-                },
-                shape = RoundedCornerShape(18.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(8.dp)
-
+                singleLine = true
             )
         }
     }
 }
+
+
+
 
 //Pengaturan Bottom Bar Maps
 @Composable
@@ -557,20 +565,6 @@ fun mapsBottomBar(
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Button(
-                onClick = { navController.navigate(Screen.Forum.route) },
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF005C03))
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.iconchat),
-                    contentDescription = "Forum",
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Forum", color = Color.White)
-            }
-            Spacer(modifier = Modifier.width(16.dp))
             Button(
                 onClick = { onShowBottomSheetChange(true) },
                 shape = CircleShape,
