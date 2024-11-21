@@ -41,7 +41,6 @@ AgriSynergi_App/<br>
 - **Ario**  
 
 
-
 ## 🚀 Cara Menggunakan
 1. Clone repository ini:
    ```bash
@@ -49,6 +48,36 @@ AgriSynergi_App/<br>
 2. Buka proyek di Android Studio. (Koala Feature Drop Version)
 3. Sinkronisasi dependensi Gradle.
 4. Jalankan aplikasi menggunakan emulator atau perangkat fisik.
+
+## :star: Gabung sebagai Kontributor
+1. Cek branch yang tersedia:
+   ```bash
+   git branch
+2. Buat branch baru
+   ```bash
+   git branch nama_kontibutor
+3. Buat branch baru dengan nama kontributor:
+   ```bash
+   git checkout -b nama_kontributor
+4. Tambahkan perubahan ke staging area:
+   ```bash
+   git add .
+5. Commit perubahan dengan pesan deskriptif:
+   ```bash
+   git commit -m "nama_kontributor: Deskripsi perubahan"
+6. Push branch ke repository:
+   ```bash
+   git push origin nama_kontributor
+7. Lakukan pull untuk memastikan branch Anda selalu terbarui dengan perubahan terbaru:
+   ```bash
+   git pull origin main
+
+***Noted: origin main hanya digunakan satu kali saat awal***
+***Setelah itu hanya:***
+```bash
+   git push nama_kontributor
+   git pull
+```
 
 
 ## ⚙️ Dependensi Utama
@@ -66,6 +95,10 @@ dependencies {
     implementation("com.google.accompanist:accompanist-pager-indicators:0.28.0")
     implementation("androidx.compose.material:material-icons-extended:1.7.0")
 }
+```
+
+
+
 
 
 
