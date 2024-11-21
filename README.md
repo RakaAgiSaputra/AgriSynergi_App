@@ -82,7 +82,7 @@ AgriSynergi_App/<br>
 
 ## ⚙️ Dependensi Utama
 
-Tambahkan dependensi berikut di `build.gradle`:
+Dependensi yang digunakan sebagai berikut di `build.gradle`:
 
 ```gradle
 dependencies {
