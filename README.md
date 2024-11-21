@@ -75,7 +75,7 @@ AgriSynergi_App/<br>
 ***Noted: origin main hanya digunakan satu kali saat awal***
 ***Setelah itu hanya:***
 ```bash
-   git push nama_kontributor
+   git push
    git pull
 ```
 
