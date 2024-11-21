@@ -44,7 +44,7 @@ AgriSynergi_App/<br>
 ## 🚀 Cara Menggunakan
 1. Clone repository ini:
    ```bash
-   git clone https://github.com/username/AgriSynergi_App.git
+   git clone https://github.com/RakaAgiSaputra/AgriSynergi_App.git
 2. Buka proyek di Android Studio. (Koala Feature Drop Version)
 3. Sinkronisasi dependensi Gradle.
 4. Jalankan aplikasi menggunakan emulator atau perangkat fisik.
