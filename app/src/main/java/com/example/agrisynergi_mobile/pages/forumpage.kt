@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -34,6 +35,7 @@ import androidx.compose.ui.draw.shadow
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.data.Forum
 import com.example.agrisynergi_mobile.data.dataforum
+import com.example.agrisynergi_mobile.navigation.Screen
 
 //Main Forum
 @Composable
@@ -245,6 +247,7 @@ fun ForumItem(forum: Forum) {
     }
 
 }
+
 //Setting Top Bar
 @Composable
 fun CustomTopBar(
@@ -254,12 +257,14 @@ fun CustomTopBar(
     onAddClick: () -> Unit
 ) {
     Column {
-        TopAppBar(
-            backgroundColor = Color(0xFF13382C),
-            contentColor = Color.Black,
-            elevation = 4.dp
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF13382C))
+                .padding(horizontal = 4.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Tombol kembali
             IconButton(onClick = { onBackClick() }) {
                 Icon(
                     painter = painterResource(id = R.drawable.iconback),
@@ -269,6 +274,24 @@ fun CustomTopBar(
                 )
             }
 
+            IconButton(onClick = { navController.navigate(Screen.Komunitas.route) }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.iconcommunity),
+                    contentDescription = "Community",
+                    modifier = Modifier.size(30.dp),
+                    tint = Color.White
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF13382C))
+                .padding(horizontal = 16.dp, vertical = 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             var searchQuery by remember { mutableStateOf("") }
             TextField(
                 value = searchQuery,
@@ -278,8 +301,7 @@ fun CustomTopBar(
                 },
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 8.dp)
-                    .height(30.dp),
+                    .height(40.dp),
                 placeholder = { Text("Search") },
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color(0xFF5B8C51),
@@ -290,11 +312,14 @@ fun CustomTopBar(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Filled.Search,
-                        contentDescription = "Search Icon"
+                        contentDescription = "Search Icon",
+                        tint = Color.White
                     )
                 },
                 singleLine = true
             )
+
+            Spacer(modifier = Modifier.width(8.dp))
 
             // Tombol tambah
             IconButton(onClick = {
@@ -309,52 +334,28 @@ fun CustomTopBar(
                 )
             }
         }
+
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(40.dp)
-                .background(Color(0xFF13382C)),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                .background(Color(0xFF13382C))
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
-            item {
+            val categories = listOf("#Trending", "#Terbaru", "#Hamajagung", "#Musim", "#BibitJagung", "#Hama", "Panen")
+            items(categories) { category ->
                 Box(
                     modifier = Modifier
                         .background(Color.White, shape = RoundedCornerShape(8.dp))
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    Text(text = "Trending", color = Color(0xFF5B8C51))
+                    Text(text = category, color = Color(0xFF5B8C51), fontSize = 10.sp)
                 }
             }
-            item {
-                Box(
-                    modifier = Modifier
-                        .background(Color.White, shape = RoundedCornerShape(8.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text(text = "Terbaru", color = Color(0xFF5B8C51))
-                }
-            }
-            item {
-                Box(
-                    modifier = Modifier
-                        .background(Color.White, shape = RoundedCornerShape(8.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text(text = "#Hamajagung", color = Color(0xFF5B8C51))
-                }
-            }
-            item {
-                Box(
-                    modifier = Modifier
-                        .background(Color.White, shape = RoundedCornerShape(8.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text(text = "#Musim", color = Color(0xFF5B8C51))
-                }
-            }
-
         }
     }
 }
+
 
 
