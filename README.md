@@ -19,8 +19,8 @@ AgriSynergi_App adalah aplikasi berbasis Android yang dirancang untuk mendukung 
 
 ## 📂 Struktur Proyek
 AgriSynergi_App/
-├── app/ 
-│ ├── src/ 
+├── app/ \n
+│ ├── src/ \n 
 │ │ ├── main/ 
 │ │ │ ├── java/com/example/agrisynergi_mobile/
 │ │ │ │ ├── data # dummy data
