@@ -56,9 +56,9 @@ AgriSynergi_App/<br>
 2. Buat branch baru
    ```bash
    git branch nama_kontibutor
-3. Buat branch baru dengan nama kontributor:
+3. Pilih branch baru dengan nama kontributor:
    ```bash
-   git checkout -b nama_kontributor
+   git checkout nama_kontributor
 4. Tambahkan perubahan ke staging area:
    ```bash
    git add .
