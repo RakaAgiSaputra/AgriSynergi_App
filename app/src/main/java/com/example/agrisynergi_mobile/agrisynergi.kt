@@ -1,11 +1,11 @@
 package com.example.agrisynergi_mobile
 
-import android.content.Intent
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -14,32 +14,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
+import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.agrisynergi_mobile.User.AboutUsActivity
-import com.example.agrisynergi_mobile.User.AddDiscountCodeActivity
-import com.example.agrisynergi_mobile.User.CheckoutActivity
-import com.example.agrisynergi_mobile.User.DoneCheckoutActivity
-import com.example.agrisynergi_mobile.User.DropshipperCatalog2Activity
-import com.example.agrisynergi_mobile.User.DropshipperCatalogActivity
-import com.example.agrisynergi_mobile.User.EditProfileActivity
-import com.example.agrisynergi_mobile.User.MyFavorite2Activity
-import com.example.agrisynergi_mobile.User.MyFavoriteActivity
-import com.example.agrisynergi_mobile.User.OrderHistoryActivity
-import com.example.agrisynergi_mobile.User.PostingActivity
-import com.example.agrisynergi_mobile.User.StartSellingActivity
-import com.example.agrisynergi_mobile.User.UserProfileScreen
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.pages.DetailMarketScreen
 import com.example.agrisynergi_mobile.pages.MainScreen
 import com.example.agrisynergi_mobile.pages.MapsScreen
 import com.example.agrisynergi_mobile.pages.MarketScreen
+import com.example.agrisynergi_mobile.pages.NotifScreen
+import com.example.agrisynergi_mobile.pages.SplashScreen
+import com.example.agrisynergi_mobile.pages.UserScreen
+import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen1
+import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen2
+import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen3
+import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen4
+import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen5
+import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
 import com.example.agrisynergymobile.pages.ForumScreen
 
 @Composable
@@ -51,8 +47,13 @@ fun AgrisynergiApp(
     val currentRoute = navBackStackEntry.value?.destination?.route
 
     Scaffold(
+        topBar = {
+            BerandaTopBar(navController = navController, currentRoute = currentRoute)
+        },
         bottomBar = {
-            if (currentRoute != null && !currentRoute.startsWith("detailmarket") && currentRoute != Screen.Maps.route && currentRoute != Screen.Forum.route) {
+            AnimatedVisibility(
+                visible = currentRoute.shouldShowBottomBar()
+            ) {
                 BottomNavigationBar(navController)
             }
         },
@@ -60,9 +61,27 @@ fun AgrisynergiApp(
     ) { contentPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Beranda.route,
+            startDestination = Screen.Splash.route,
             modifier = modifier.padding(contentPadding)
         ) {
+            composable(Screen.Splash.route) {
+                SplashScreen(navController = navController)
+            }
+            composable(Screen.OnBoarding1.route) {
+                OnBoardingScreen1(navController = navController)
+            }
+            composable(Screen.OnBoarding2.route) {
+                OnBoardingScreen2(navController = navController)
+            }
+            composable(Screen.OnBoarding3.route) {
+                OnBoardingScreen3(navController = navController)
+            }
+            composable(Screen.OnBoarding4.route) {
+                OnBoardingScreen4(navController = navController)
+            }
+            composable(Screen.OnBoarding5.route) {
+                OnBoardingScreen5(navController = navController)
+            }
             composable(Screen.Beranda.route) {
                 MainScreen(navHostController = navController, contentPadding = contentPadding)
             }
@@ -81,27 +100,93 @@ fun AgrisynergiApp(
             composable(Screen.Forum.route) {
                 ForumScreen(navController = navController)
             }
-            composable(Screen.User.route) {
-                UserProfileScreen {
-                    option ->
-                    when (option) {
-                        "Edit Profile" -> {
-                        }
-                    }}
 
+            composable(Screen.User.route) {
+                UserScreen(navController = navController)
+            }
+            composable(Screen.Konsultasi.route) {
 
             }
-
+            composable(Screen.Notifikasi.route) {
+                NotifScreen(navController= navController)
+            }
 
         }
-
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BerandaTopBar(navController: NavController, currentRoute: String?) {
+    if (currentRoute == Screen.Beranda.route) {
+        TopAppBar(
+            title = { },
+            navigationIcon = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(start = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.iconagrisynergy),
+                        contentDescription = "Logo Aplikasi",
+                        modifier = Modifier.size(59.dp),
+                        tint = Color.Unspecified
+                    )
+                }
+            },
+            actions = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(end = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    IconButton(onClick = {
+                        navController.navigate(Screen.Notifikasi.route)
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.iconnotiffull),
+                            contentDescription = "Notifikasi",
+                            modifier = Modifier.size(27.dp),
+                            tint = Color.White
+                        )
+                    }
+
+                    IconButton(onClick = {
+                        navController.navigate(Screen.User.route)
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.iconprofileline),
+                            contentDescription = "Profile",
+                            modifier = Modifier.size(29.dp),
+                            tint = Color.White
+                        )
+                    }
+
+                }
+            },
+            colors = TopAppBarDefaults.smallTopAppBarColors(
+                containerColor = Color(0xFF13382C),
+                navigationIconContentColor = Color.White,
+                titleContentColor = Color.White
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(85.dp)
+        )
+    }
+}
+
+
+
+
+
 @Composable
 private fun BottomNavigationBar(
-    navController: NavHostController,
-    modifier: Modifier = Modifier
+    navController: NavHostController
 ) {
     NavigationBar(
         containerColor = Color(0xFF13382C)
@@ -131,9 +216,9 @@ private fun BottomNavigationBar(
                 screen = Screen.Konsultasi
             ),
             NavigationItem(
-                title = "User",
-                icon = R.drawable.iconuser1,
-                screen = Screen.User
+                title = "Forum",
+                icon = R.drawable.iconforum,
+                screen = Screen.Forum
             )
         )
         navigationItems.forEach { item ->
@@ -152,14 +237,14 @@ private fun BottomNavigationBar(
                     Image(
                         painter = painterResource(id = item.icon),
                         contentDescription = item.title,
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(22.dp),
                     )
                 },
                 label = {
                     Text(
                         text = item.title,
                         color = Color.White,
-                        fontSize = 12.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
