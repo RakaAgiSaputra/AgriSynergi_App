@@ -21,7 +21,6 @@
             android:theme="@style/Theme.Agrisynergi_Mobile">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -68,8 +67,9 @@
         <activity
             android:name=".User.StartSellingActivity"
             android:exported="false" />
-
-
+        <activity
+            android:name=".User.NewDropshipperActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

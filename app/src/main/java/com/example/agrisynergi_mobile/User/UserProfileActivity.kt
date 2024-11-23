@@ -36,8 +36,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.MainActivity
 import com.example.agrisynergi_mobile.User.DoneCheckoutActivity
 import com.example.agrisynergi_mobile.User.DropshipperCatalog2Activity
-
+import com.example.agrisynergi_mobile.User.NewDropshipperActivity
 import com.example.agrisynergi_mobile.R
+
 
 class UserProfileActivity : ComponentActivity() {
 
@@ -75,6 +76,9 @@ class UserProfileActivity : ComponentActivity() {
                         "Mulai Berjualan" -> {
                             startActivity(Intent(this, StartSellingActivity::class.java))
                         }
+                        "Jadi Dropshipper" -> {
+                            startActivity(Intent(this, NewDropshipperActivity::class.java))
+                        }
                         "Masukkan Diskon" -> {
                             startActivity(Intent(this, AddDiscountCodeActivity::class.java))
                         }
@@ -97,9 +101,6 @@ class UserProfileActivity : ComponentActivity() {
                 }
             )
         }
-
-
-
     }
 }
 
@@ -219,6 +220,7 @@ fun OptionsList(onOptionSelected: (String) -> Unit) {
                     "Katalog Dropshipper" -> context.startActivity(Intent(context, DropshipperCatalogActivity::class.java))
                     "Favorite Saya" -> context.startActivity(Intent(context, MyFavoriteActivity::class.java))
                     "Mulai Berjualan" -> context.startActivity(Intent(context, StartSellingActivity::class.java))
+                    "Jadi Dropshipper" -> context.startActivity(Intent(context, NewDropshipperActivity::class.java))
                     "Tentang Kami" -> context.startActivity(Intent(context, AboutUsActivity::class.java))
                     "Katalog Dropshipper2" -> context.startActivity(Intent(context, DropshipperCatalog2Activity::class.java))
                     "Favorite2 Saya" -> context.startActivity(Intent(context, MyFavorite2Activity::class.java))
