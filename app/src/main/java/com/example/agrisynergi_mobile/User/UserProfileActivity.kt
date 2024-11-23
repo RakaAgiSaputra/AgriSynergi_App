@@ -29,6 +29,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.rememberNavController
+import com.example.agrisynergi_mobile.MainActivity
 import com.example.agrisynergi_mobile.User.DoneCheckoutActivity
 import com.example.agrisynergi_mobile.User.DropshipperCatalog2Activity
 
@@ -39,54 +44,68 @@ class UserProfileActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            UserProfileScreen { option ->
-                when (option) {
-                    "Edit Profile" -> {
-                        startActivity(Intent(this, EditProfileActivity::class.java))
+            val navController = rememberNavController()
+            UserProfileScreen(
+                onOptionSelected = { option ->
+                    when (option) {
+                        "Edit Profile" -> {
+                            startActivity(Intent(this, EditProfileActivity::class.java))
+                        }
+                        "Riwayat Pesanan" -> {
+                            startActivity(Intent(this, OrderHistoryActivity::class.java))
+                        }
+                        "Tentang Kami" -> {
+                            startActivity(Intent(this, AboutUsActivity::class.java))
+                        }
+                        "Katalog Dropshipper" -> {
+                            startActivity(Intent(this, DropshipperCatalogActivity::class.java))
+                        }
+                        "Katalog Dropshipper2" -> {
+                            startActivity(Intent(this, DropshipperCatalog2Activity::class.java))
+                        }
+                        "Postingan Saya" -> {
+                            startActivity(Intent(this, PostingActivity::class.java))
+                        }
+                        "Favorite Saya" -> {
+                            startActivity(Intent(this, MyFavoriteActivity::class.java))
+                        }
+                        "Favorite2 Saya" -> {
+                            startActivity(Intent(this, MyFavorite2Activity::class.java))
+                        }
+                        "Mulai Berjualan" -> {
+                            startActivity(Intent(this, StartSellingActivity::class.java))
+                        }
+                        "Masukkan Diskon" -> {
+                            startActivity(Intent(this, AddDiscountCodeActivity::class.java))
+                        }
+                        "Done Checkout" -> {
+                            startActivity(Intent(this, DoneCheckoutActivity::class.java))
+                        }
+                        "Checkout" -> {
+                            startActivity(Intent(this, CheckoutActivity::class.java))
+                        }
                     }
-                    "Riwayat Pesanan" -> {
-                        startActivity(Intent(this, OrderHistoryActivity::class.java))
+                },
+                onBackClicked = {
+                    navController.navigate("beranda") {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        restoreState = true
+                        launchSingleTop = true
                     }
-                    "Tentang Kami" -> {
-                        startActivity(Intent(this, AboutUsActivity::class.java))
-                    }
-                    "Katalog Dropshipper" -> {
-                        startActivity(Intent(this, DropshipperCatalogActivity::class.java))
-                    }
-                    "Katalog Dropshipper2" -> {
-                        startActivity(Intent(this, DropshipperCatalog2Activity::class.java))
-                    }
-                    "Postingan Saya" -> {
-                        startActivity(Intent(this, PostingActivity::class.java))
-                    }
-                    "Favorite Saya" -> {
-                        startActivity(Intent(this, MyFavoriteActivity::class.java))
-                    }
-                    "Favorite2 Saya" -> {
-                        startActivity(Intent(this, MyFavorite2Activity::class.java))
-                    }
-                    "Mulai Berjualan" -> {
-                        startActivity(Intent(this, StartSellingActivity::class.java))
-                    }
-                    "Masukkan Diskon" -> {
-                        startActivity(Intent(this, AddDiscountCodeActivity::class.java))
-                    }
-                    "Done Checkout" -> {
-                        startActivity(Intent(this, DoneCheckoutActivity::class.java))
-                    }
-                    "Checkout" -> {
-                        startActivity(Intent(this, CheckoutActivity::class.java))
-                    }
-
                 }
-            }
+            )
         }
+
+
+
     }
 }
 
 
 @Composable
-fun UserProfileScreen(onOptionSelected: (String) -> Unit) {
+fun UserProfileScreen(onOptionSelected: (String) -> Unit, onBackClicked: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -97,21 +116,15 @@ fun UserProfileScreen(onOptionSelected: (String) -> Unit) {
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            UserProfileHeader()
+            UserProfileHeader(onBackClicked = onBackClicked)
             ProfileSection()
             OptionsList(onOptionSelected)
-            Spacer(modifier = Modifier.height(60.dp))
         }
-
-        BottomNavigationBar(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-        )
     }
 }
 
 @Composable
-fun UserProfileHeader() {
+fun UserProfileHeader(onBackClicked: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -123,7 +136,9 @@ fun UserProfileHeader() {
             painter = painterResource(id = R.drawable.ic_back),
             contentDescription = "Back",
             tint = Color.White,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier
+                .size(24.dp)
+                .clickable { onBackClicked() }
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
@@ -132,9 +147,9 @@ fun UserProfileHeader() {
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium
         )
-
     }
 }
+
 
 @Composable
 fun ProfileSection() {
@@ -163,9 +178,9 @@ fun ProfileSection() {
     }
 }
 
-
 @Composable
 fun OptionsList(onOptionSelected: (String) -> Unit) {
+    val context = LocalContext.current
     val options = listOf(
         "Edit Profile",
         "Riwayat Pesanan",
@@ -196,7 +211,23 @@ fun OptionsList(onOptionSelected: (String) -> Unit) {
             .padding(vertical = 16.dp)
     ) {
         options.forEach { option ->
-            OptionItem(option = option, onOptionSelected = onOptionSelected)
+            OptionItem(option = option) {
+                when (option) {
+                    "Edit Profile" -> context.startActivity(Intent(context, EditProfileActivity::class.java))
+                    "Riwayat Pesanan" -> context.startActivity(Intent(context, OrderHistoryActivity::class.java))
+                    "Postingan Saya" -> context.startActivity(Intent(context, PostingActivity::class.java))
+                    "Katalog Dropshipper" -> context.startActivity(Intent(context, DropshipperCatalogActivity::class.java))
+                    "Favorite Saya" -> context.startActivity(Intent(context, MyFavoriteActivity::class.java))
+                    "Mulai Berjualan" -> context.startActivity(Intent(context, StartSellingActivity::class.java))
+                    "Tentang Kami" -> context.startActivity(Intent(context, AboutUsActivity::class.java))
+                    "Katalog Dropshipper2" -> context.startActivity(Intent(context, DropshipperCatalog2Activity::class.java))
+                    "Favorite2 Saya" -> context.startActivity(Intent(context, MyFavorite2Activity::class.java))
+                    "Masukkan Diskon" -> context.startActivity(Intent(context, AddDiscountCodeActivity::class.java))
+                    "Done Checkout" -> context.startActivity(Intent(context, DoneCheckoutActivity::class.java))
+                    "Checkout" -> context.startActivity(Intent(context, CheckoutActivity::class.java))
+
+                }
+            }
             if (option == "Jadi Dropshipper" || option == "Log Out") {
                 Divider(
                     color = Color(0xFFF0F2F5),
@@ -209,7 +240,7 @@ fun OptionsList(onOptionSelected: (String) -> Unit) {
 }
 
 @Composable
-fun OptionItem(option: String, onOptionSelected: (String) -> Unit) {
+fun OptionItem(option: String, onClick: () -> Unit) {
     var isClicked by remember { mutableStateOf(false) }
 
     Row(
@@ -217,11 +248,10 @@ fun OptionItem(option: String, onOptionSelected: (String) -> Unit) {
             .fillMaxWidth()
             .clickable {
                 isClicked = true
-                onOptionSelected(option)
+                onClick() // Jalankan navigasi
             }
             .background(if (isClicked) Color(0xFFBCD7BC) else Color.Transparent)
             .padding(horizontal = 16.dp, vertical = 12.dp),
-
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -250,38 +280,38 @@ fun OptionItem(option: String, onOptionSelected: (String) -> Unit) {
 
 
 
-@Composable
-fun BottomNavigationBar(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Color(0xFF13382C))
-            .padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        BottomNavItem("Beranda", R.drawable.ic_beranda, isSelected = false)
-        BottomNavItem("Maps", R.drawable.ic_maps, isSelected = false)
-        BottomNavItem("Market", R.drawable.ic_market, isSelected = false)
-        BottomNavItem("Consultation", R.drawable.ic_consultation, isSelected = false)
-        BottomNavItem("User", R.drawable.ic_profile, isSelected = true)
-    }
-}
+//@Composable
+//fun BottomNavigationBar(modifier: Modifier = Modifier) {
+//    Row(
+//        modifier = modifier
+//            .fillMaxWidth()
+//            .background(Color(0xFF13382C))
+//            .padding(vertical = 12.dp),
+//        horizontalArrangement = Arrangement.SpaceAround
+//    ) {
+//        BottomNavItem("Beranda", R.drawable.ic_beranda, isSelected = false)
+//        BottomNavItem("Maps", R.drawable.ic_maps, isSelected = false)
+//        BottomNavItem("Market", R.drawable.ic_market, isSelected = false)
+//        BottomNavItem("Consultation", R.drawable.ic_consultation, isSelected = false)
+//        BottomNavItem("User", R.drawable.ic_profile, isSelected = true)
+//    }
+//}
 
-@Composable
-fun BottomNavItem(label: String, iconRes: Int, isSelected: Boolean) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            painter = painterResource(id = iconRes),
-            contentDescription = label,
-            tint = if (isSelected) Color(0xFF5F897B) else Color.White,
-            modifier = Modifier.size(24.dp)
-        )
-        Text(
-            text = label,
-            color = if (isSelected) Color(0xFF5F897B) else Color.White,
-            fontSize = 12.sp
-        )
-    }
-}
+//@Composable
+//fun BottomNavItem(label: String, iconRes: Int, isSelected: Boolean) {
+//    Column(
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        Icon(
+//            painter = painterResource(id = iconRes),
+//            contentDescription = label,
+//            tint = if (isSelected) Color(0xFF5F897B) else Color.White,
+//            modifier = Modifier.size(24.dp)
+//        )
+//        Text(
+//            text = label,
+//            color = if (isSelected) Color(0xFF5F897B) else Color.White,
+//            fontSize = 12.sp
+//        )
+//    }
+//}

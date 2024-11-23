@@ -1,5 +1,6 @@
 package com.example.agrisynergi_mobile
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -8,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -21,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.agrisynergi_mobile.User.UserProfileScreen
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.pages.DetailMarketScreen
@@ -100,17 +103,21 @@ fun AgrisynergiApp(
             composable(Screen.Forum.route) {
                 ForumScreen(navController = navController)
             }
-
-            composable(Screen.User.route) {
-                UserScreen(navController = navController)
-            }
+//            composable(Screen.User.route) {
+//                UserScreen(navController = navController)
+//            }
             composable(Screen.Konsultasi.route) {
 
             }
             composable(Screen.Notifikasi.route) {
                 NotifScreen(navController= navController)
             }
-
+           composable("user_profile") {
+                UserProfileScreen(
+                    onOptionSelected = { /* Handle navigasi berdasarkan opsi */ },
+                    onBackClicked = { navController.popBackStack() }
+                )
+            }
         }
     }
 }
@@ -118,6 +125,8 @@ fun AgrisynergiApp(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BerandaTopBar(navController: NavController, currentRoute: String?) {
+    val context = LocalContext.current
+
     if (currentRoute == Screen.Beranda.route) {
         TopAppBar(
             title = { },
@@ -156,7 +165,7 @@ fun BerandaTopBar(navController: NavController, currentRoute: String?) {
                     }
 
                     IconButton(onClick = {
-                        navController.navigate(Screen.User.route)
+                        navController.navigate("user_profile")
                     }) {
                         Icon(
                             painter = painterResource(id = R.drawable.iconprofileline),
@@ -165,7 +174,6 @@ fun BerandaTopBar(navController: NavController, currentRoute: String?) {
                             tint = Color.White
                         )
                     }
-
                 }
             },
             colors = TopAppBarDefaults.smallTopAppBarColors(
