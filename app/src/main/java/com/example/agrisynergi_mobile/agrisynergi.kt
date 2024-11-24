@@ -26,6 +26,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.User.UserProfileScreen
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
+import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.DetailMarketScreen
 import com.example.agrisynergi_mobile.pages.MainScreen
 import com.example.agrisynergi_mobile.pages.MapsScreen
@@ -118,6 +119,10 @@ fun AgrisynergiApp(
                     onBackClicked = { navController.popBackStack() }
                 )
             }
+            composable(Screen.Komunitas.route) {
+                CommunityMemberScreen(navController = navController)
+            }
+
         }
     }
 }

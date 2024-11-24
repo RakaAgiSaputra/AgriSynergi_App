@@ -23,13 +23,13 @@ class NewDropshipperActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            NewDropshipperScreen()
+            NewDropshipperScreen{finish()}
         }
     }
 }
 
 @Composable
-fun NewDropshipperScreen() {
+fun NewDropshipperScreen(onBackPressed: () -> Unit) {
     var currentScreen by remember { mutableStateOf("main") }
 
     when (currentScreen) {
@@ -43,7 +43,7 @@ fun NewDropshipperScreen() {
                     .fillMaxSize()
                     .padding(bottom = 60.dp)
             ) {
-                NewDropshipperHeader()
+                NewDropshipperHeader(onBackPressed)
                 Spacer(modifier = Modifier.height(16.dp))
                 TitleSection()
                 Spacer(modifier = Modifier.height(16.dp))
@@ -78,7 +78,7 @@ fun NewDropshipperScreen() {
 }
 
 @Composable
-fun NewDropshipperHeader() {
+fun NewDropshipperHeader(onBackPressed: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -91,6 +91,7 @@ fun NewDropshipperHeader() {
             contentDescription = "Back",
             tint = Color.White,
             modifier = Modifier.size(24.dp)
+                .clickable { onBackPressed() }
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
