@@ -1,12 +1,12 @@
 package com.example.agrisynergymobile.pages
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -32,12 +32,10 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.focusModifier
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.graphicsLayer
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.data.Forum
 import com.example.agrisynergi_mobile.data.dataforum
+import com.example.agrisynergi_mobile.navigation.Screen
 
 //Main Forum
 @Composable
@@ -49,13 +47,10 @@ fun ForumScreen(navController: NavHostController) {
                 navController = navController,
                 onBackClick = { navController.navigateUp() },
                 onSearchClick = { query ->
-//                    Toast.makeText(context, "Searching for: $query", Toast.LENGTH_SHORT).show()
                 },
                 onAddClick = {
-//                    Toast.makeText(context, "Add clicked",oast.L TENGTH_SHORT).show()
                 }
             )
-            // Konten Forum
             val forums = dataforum.forums
             ForumList(forums = forums)
         }
@@ -252,6 +247,7 @@ fun ForumItem(forum: Forum) {
     }
 
 }
+
 //Setting Top Bar
 @Composable
 fun CustomTopBar(
@@ -260,58 +256,106 @@ fun CustomTopBar(
     onSearchClick: (String) -> Unit,
     onAddClick: () -> Unit
 ) {
-    TopAppBar(
-        backgroundColor = Color.White,
-        contentColor = Color.Black,
-        elevation = 4.dp
-    ) {
-        // Tombol kembali
-        IconButton(onClick = { onBackClick() }) {
-            Icon(
-                painter = painterResource(id = R.drawable.iconback),
-                contentDescription = "Back",
-                modifier = Modifier.size(30.dp)
-            )
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF13382C))
+                .padding(horizontal = 4.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { onBackClick() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.iconback),
+                    contentDescription = "Back",
+                    modifier = Modifier.size(30.dp),
+                    tint = Color.White
+                )
+            }
+
+            IconButton(onClick = { navController.navigate(Screen.Komunitas.route) }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.iconcommunity),
+                    contentDescription = "Community",
+                    modifier = Modifier.size(30.dp),
+                    tint = Color.White
+                )
+            }
         }
 
-        var searchQuery by remember { mutableStateOf("") }
-        TextField(
-            value = searchQuery,
-            onValueChange = {
-                searchQuery = it
-                onSearchClick(it)
-            },
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 8.dp)
-                .height(30.dp),
-            placeholder = { Text("Search") },
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color(0xFF5B8C51),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            shape = RoundedCornerShape(8.dp),
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.Search,
-                    contentDescription = "Search Icon"
-                )
-            },
-            singleLine = true
-        )
-
-        // Tombol tambah
-        IconButton(onClick = {
-            onAddClick()
-            navController.navigate("addPostPage")
-        } ) {
-            Icon(
-                painter = painterResource(id = R.drawable.iconaddfor),
-                contentDescription = "Add",
-                tint = Color.Unspecified,
-                modifier = Modifier.size(30.dp)
+                .fillMaxWidth()
+                .background(Color(0xFF13382C))
+                .padding(horizontal = 16.dp, vertical = 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            var searchQuery by remember { mutableStateOf("") }
+            TextField(
+                value = searchQuery,
+                onValueChange = {
+                    searchQuery = it
+                    onSearchClick(it)
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(40.dp),
+                placeholder = { Text("Search") },
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color(0xFF5B8C51),
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                shape = RoundedCornerShape(8.dp),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Search Icon",
+                        tint = Color.White
+                    )
+                },
+                singleLine = true
             )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Tombol tambah
+            IconButton(onClick = {
+                onAddClick()
+                navController.navigate("addPostScreen")
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.iconaddfor),
+                    contentDescription = "Add",
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+        }
+
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF13382C))
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp)
+        ) {
+            val categories = listOf("#Trending", "#Terbaru", "#Hamajagung", "#Musim", "#BibitJagung", "#Hama", "Panen")
+            items(categories) { category ->
+                Box(
+                    modifier = Modifier
+                        .background(Color.White, shape = RoundedCornerShape(8.dp))
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text(text = category, color = Color(0xFF5B8C51), fontSize = 10.sp)
+                }
+            }
         }
     }
 }
+
+
+
