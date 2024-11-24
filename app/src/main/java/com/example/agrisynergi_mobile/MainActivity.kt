@@ -23,6 +23,9 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
                     AgrisynergiApp(navController = navController)
+//                    MarketScreen()
+//                    CheckoutScreen()
+//                    BeliSekarangScreen()
                 }
             }
         }

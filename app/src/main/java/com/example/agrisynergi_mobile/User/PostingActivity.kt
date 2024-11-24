@@ -8,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -234,7 +233,7 @@ fun PostItem(title: String, updatedTime: String, imageRes: Int) {
                         },
                         leadingIcon = {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_archive),
+                                painter = painterResource(id = R.drawable.ic_archive_r),
                                 contentDescription = "Arsip",
                                 tint = Color.Black,
                                 modifier = Modifier.size(16.dp)

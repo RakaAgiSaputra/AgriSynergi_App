@@ -8,6 +8,16 @@ sealed class Screen(val route: String) {
     object User : Screen("user")
     object Forum : Screen("forum")
     object DetailMarket : Screen("detailmarket/{marketId}")
+    object Keranjang : Screen("keranjang/{marketId}") {
+        fun createRoute(marketId: Int) = "keranjang/$marketId"
+    }
+    object Checkout : Screen("checkout/{marketId}") {
+        fun createRoute(marketId: Int) = "checkout/$marketId"
+    }
+    object BeliSekarang : Screen("belisekarang/{marketId}") {
+        fun createRoute(marketId: Int) = "belisekarang/$marketId"
+    }
+
     object Notifikasi : Screen("notifikasi")
     data object Splash: Screen("splash")
     data object OnBoarding1 : Screen("onboarding1")
