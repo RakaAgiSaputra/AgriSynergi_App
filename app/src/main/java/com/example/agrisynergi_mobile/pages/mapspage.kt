@@ -163,6 +163,8 @@ fun maps(
                     }
                 }
                 // agar maps berwarna hitam
+                this.tileProvider.tileSource = darkMatterTileSource
+                // agar maps berwarna hitam
 //                this.tileProvider.tileSource = darkMatterTileSource
 
                 controller.setZoom(15.0)

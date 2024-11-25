@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -36,7 +35,6 @@ import com.example.agrisynergi_mobile.data.OnBoardingItem
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ResourceType")
 @OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
@@ -49,7 +47,7 @@ fun OnBoardingScreen3(
     val scope = rememberCoroutineScope()
     val onBoardings = listOf(
         OnBoardingItem(
-            resId = R.drawable.icononboarding4,
+            resId = R.drawable.icononboarding5,
             title = "Pemetaan Lahan yang Akurat",
             description = "Dengan fitur pemetaan lahan AgriSynergy, Anda dapat memantau kondisi lahan secara real-time. Fitur ini membantu merencanakan dan memelihara lahan dengan lebih efisien"
         )

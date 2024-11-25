@@ -26,7 +26,7 @@ class EditProfileActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            EditProfileScreen { finish() }  // Closes the activity when back is pressed
+            EditProfileScreen { finish() }
         }
     }
 }

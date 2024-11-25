@@ -21,13 +21,55 @@
             android:theme="@style/Theme.Agrisynergi_Mobile">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-
         </activity>
 
+        <activity
+            android:name=".User.UserProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User.EditProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User.OrderHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User.AboutUsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User.DropshipperCatalogActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User.DropshipperCatalog2Activity"
+            android:exported="false" />
+        <activity
+            android:name=".User.PostingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User.TambahPostinganActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User.MyFavoriteActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User.MyFavorite2Activity"
+            android:exported="false" />
+        <activity
+            android:name=".User.AddDiscountCodeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User.DoneCheckoutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User.CheckoutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User.StartSellingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User.NewDropshipperActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
