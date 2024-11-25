@@ -1,15 +1,17 @@
 package com.example.agrisynergi_mobile.pages
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Surface
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,12 +22,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.agrisynergi_mobile.R
+import androidx.compose.runtime.rememberCoroutineScope
+import com.example.agrisynergi_mobile.database.testDatabase.Api
+import com.example.agrisynergi_mobile.database.testDatabase.RetrofitClient1
+import com.example.agrisynergi_mobile.database.testDatabase.User
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 
 @Composable
 fun NotifScreen(navController: NavHostController) {
-    NotifTopBar(
-        onBackClick = { navController.navigateUp() }
-    )
+    val retrofit = RetrofitClient1().instance
+
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Column {
+            NotifTopBar(
+                onBackClick = { navController.navigateUp() }
+            )
+            NotifContent(api = retrofit)
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,7 +69,7 @@ fun NotifTopBar(
                     tint = Color.White
                 )
             }
-            Text(
+            androidx.compose.material.Text(
                 text = "Notifikasi",
                 style = TextStyle(
                     fontSize = 20.sp,
@@ -74,3 +91,65 @@ fun NotifTopBar(
         }
     }
 }
+
+
+//(hanya contoh) bisa dihapus Penerapan database untuk untuk user di halaman notifikasi
+@Composable
+fun NotifContent(api: Api) {
+    val usersData = remember { mutableStateOf<List<User>>(emptyList()) }
+    val errorMessage = remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    api.getUsers().execute()
+                }
+                if (response.isSuccessful) {
+                    response.body()?.let { body ->
+                        usersData.value = body.data
+                    } ?: run {
+                        errorMessage.value = "Response body is null"
+                    }
+                } else {
+                    errorMessage.value = "Error: ${response.code()} - ${response.message()}"
+                }
+            } catch (e: Exception) {
+                errorMessage.value = "Gagal memuat data: ${e.localizedMessage}"
+            }
+        }
+    }
+
+    if (usersData.value.isNotEmpty()) {
+        LazyColumn(modifier = Modifier.padding(16.dp)) {
+            items(usersData.value) { user ->
+                Column(modifier = Modifier.padding(bottom = 16.dp)) {
+                    androidx.compose.material.Text(
+                        text = "Nama: ${user.name}",
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    androidx.compose.material.Text(
+                        text = "Email: ${user.email}"
+                    )
+                    androidx.compose.material.Text(
+                        text = "Number: ${user.phoneNumber}"
+                    )
+                }
+            }
+        }
+    } else if (errorMessage.value.isNotEmpty()) {
+        androidx.compose.material.Text(
+            text = errorMessage.value,
+            color = Color.Red
+        )
+    } else {
+        androidx.compose.material.Text(
+            text = "Memuat...",
+            color = Color.Gray
+        )
+    }
+}
+

@@ -2,8 +2,23 @@ package com.example.agrisynergi_mobile
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,8 +38,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
+import com.example.agrisynergi_mobile.pages.BeliScreen
+import com.example.agrisynergi_mobile.pages.CheckoutScreen
 import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.DetailMarketScreen
+import com.example.agrisynergi_mobile.pages.KeranjangScreen
 import com.example.agrisynergi_mobile.pages.MainScreen
 import com.example.agrisynergi_mobile.pages.MapsScreen
 import com.example.agrisynergi_mobile.pages.MarketScreen
@@ -92,6 +110,7 @@ fun AgrisynergiApp(
             composable(Screen.Market.route) {
                 MarketScreen(navController = navController)
             }
+
             composable("detailmarket/{marketId}") { backStackEntry ->
                 val marketId = backStackEntry.arguments?.getString("marketId")?.toIntOrNull()
                 if (marketId != null) {
@@ -106,13 +125,32 @@ fun AgrisynergiApp(
                 UserScreen(navController = navController)
             }
             composable(Screen.Konsultasi.route) {
-
+                // konsultasi
             }
             composable(Screen.Notifikasi.route) {
                 NotifScreen(navController= navController)
             }
             composable(Screen.Komunitas.route) {
                 CommunityMemberScreen(navController = navController)
+            }
+
+            composable("keranjang/{marketId}") { backStackEntry ->
+                val marketId = backStackEntry.arguments?.getString("marketId")?.toIntOrNull()
+                if (marketId != null) {
+                    KeranjangScreen(marketId = marketId, navController = navController)
+                }
+            }
+            composable("belisekarang/{marketId}") { backStackEntry ->
+                val marketId = backStackEntry.arguments?.getString("marketId")?.toIntOrNull()
+                if (marketId != null) {
+                    BeliScreen(marketId = marketId, navController = navController)
+                }
+            }
+            composable("checkout/{marketId}") { backStackEntry ->
+                val marketId = backStackEntry.arguments?.getString("marketId")?.toIntOrNull()
+                if (marketId != null) {
+                    CheckoutScreen(marketId = marketId, navController = navController)
+                }
             }
 
         }

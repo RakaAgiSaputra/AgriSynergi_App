@@ -59,6 +59,7 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.data.datamarket
+import com.example.agrisynergi_mobile.navigation.Screen
 
 @Composable
 fun DetailMarketScreen(marketId: Int, navController: NavHostController) {
@@ -74,6 +75,7 @@ fun DetailMarketScreen(marketId: Int, navController: NavHostController) {
             modifier = Modifier.weight(1f)
         )
         DetailBottomBar(
+            marketId = marketId,
             navController = navController,
             showBottomSheet = showBottomSheetBuyNow,
             onShowBottomSheetChange = { showBottomSheetBuyNow = it },
@@ -265,6 +267,7 @@ fun RatingBar(
 fun DetailBottomBar(
     navController: NavHostController,
     showBottomSheet: Boolean,
+    marketId: Int,
     onShowBottomSheetChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -281,7 +284,7 @@ fun DetailBottomBar(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Button(
-                onClick = { navController.navigate("forumPage") },
+                onClick = { navController.navigate(Screen.Keranjang.createRoute(marketId = marketId)) },
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.width(190.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5F897B))

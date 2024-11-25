@@ -3,7 +3,7 @@ package com.example.agrisynergi_mobile.data
 
 data class Forum(
     val id: Int,
-    val user: User,
+    val user: UserForum,
     val hasImage: Boolean,
     val imageUrl: String?,
     val numComment: Int,
