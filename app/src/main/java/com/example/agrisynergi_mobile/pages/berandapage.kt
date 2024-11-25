@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -17,6 +18,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,6 +29,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -60,7 +66,8 @@ fun MainScreen(navHostController: NavHostController, contentPadding: PaddingValu
                         start = innerPadding.calculateStartPadding(layoutDirection = androidx.compose.ui.unit.LayoutDirection.Ltr),
                         end = innerPadding.calculateEndPadding(layoutDirection = androidx.compose.ui.unit.LayoutDirection.Ltr),
                         top = innerPadding.calculateTopPadding()
-                    )
+                    ),
+                navController = navHostController // Oper nilai navHostController ke ContentScreen
             )
         }
     )
@@ -68,7 +75,7 @@ fun MainScreen(navHostController: NavHostController, contentPadding: PaddingValu
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun ContentScreen(modifier: Modifier = Modifier) {
+fun ContentScreen(modifier: Modifier = Modifier, navController: NavHostController) {
     val webinarList = listOf(
         R.drawable.webinar1,
         R.drawable.webinar2,
@@ -131,8 +138,44 @@ fun ContentScreen(modifier: Modifier = Modifier) {
                 )
             }
         }
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    modifier = Modifier
+                        .width(334.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Button(
+                        onClick = { navController.navigate("agenda") },
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .padding(all = 16.dp)
+                            .fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF5B8C51),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(text = "Tambah Agenda", fontSize = 16.sp)
+
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_plus),
+                            contentDescription = "icon plus",
+                            modifier = Modifier.size(12.dp),
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
+        }
     }
 }
-
-
-
