@@ -54,6 +54,7 @@ import com.example.agrisynergi_mobile.pages.MarketScreen
 import com.example.agrisynergi_mobile.pages.NotifScreen
 import com.example.agrisynergi_mobile.pages.SplashScreen
 import com.example.agrisynergi_mobile.pages.UserScreen
+import com.example.agrisynergi_mobile.pages.login.LoginScreen
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen1
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen2
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen3
@@ -105,6 +106,9 @@ fun AgrisynergiApp(
             }
             composable(Screen.OnBoarding5.route) {
                 OnBoardingScreen5(navController = navController)
+            }
+            composable(Screen.Login.route){
+                LoginScreen(navController = navController)
             }
             composable(Screen.Beranda.route) {
                 MainScreen(navHostController = navController, contentPadding = contentPadding)

@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.data.OnBoardingItem
+import com.example.agrisynergi_mobile.navigation.Screen
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -117,7 +118,7 @@ fun OnBoardingScreen5(
                 ) {
                     Button(
                         onClick = {
-                            navController.navigate("beranda")
+                            navController.navigate(Screen.Login.route)
                         },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF13382C))
