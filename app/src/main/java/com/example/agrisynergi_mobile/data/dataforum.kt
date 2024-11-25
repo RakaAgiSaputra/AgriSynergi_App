@@ -4,7 +4,7 @@ object dataforum {
     val forums = listOf(
         Forum(
             id = 1,
-            user = User(
+            user = UserForum(
                 id = 1,
                 name = "Anton_09",
                 username = "@farm_anton",
@@ -20,7 +20,7 @@ object dataforum {
         ),
         Forum(
             id = 2,
-            user = User(
+            user = UserForum(
                 id = 2,
                 name = "Natural Farm",
                 username = "@Farm_id",
@@ -36,7 +36,7 @@ object dataforum {
         ),
         Forum(
             id = 3,
-            user = User(
+            user = UserForum(
                 id = 3,
                 name = "NadiaFarm",
                 username = "@nadia_id",

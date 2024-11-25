@@ -66,8 +66,6 @@ fun MainScreen(navHostController: NavHostController, contentPadding: PaddingValu
     )
 }
 
-
-
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun ContentScreen(modifier: Modifier = Modifier) {

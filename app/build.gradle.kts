@@ -77,11 +77,24 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.activity:activity-compose:1.7.2")
 
-
+    //library navigasi
     implementation ("androidx.navigation:navigation-compose:2.5.1")
     implementation ("androidx.navigation:navigation-compose:2.5.3")
+
+    //library coil
     implementation("io.coil-kt:coil-compose:2.5.0")
+
+    //Library pages state
     implementation("com.google.accompanist:accompanist-pager:0.28.0")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.28.0")
     implementation("androidx.compose.material:material-icons-extended:1.7.0")
+
+    //library retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    //library recycler view
+    implementation("androidx.recyclerview:recyclerview-selection:1.1.0")
+    implementation("androidx.cardview:cardview:1.0.0")
+
 }
