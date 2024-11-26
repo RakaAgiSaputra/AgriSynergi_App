@@ -39,7 +39,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.User.UserProfileScreen
-import com.example.agrisynergi_mobile.consultant.ChatScreen
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
@@ -54,7 +53,6 @@ import com.example.agrisynergi_mobile.pages.MarketScreen
 import com.example.agrisynergi_mobile.pages.NotifScreen
 import com.example.agrisynergi_mobile.pages.SplashScreen
 import com.example.agrisynergi_mobile.pages.UserScreen
-import com.example.agrisynergi_mobile.pages.login.LoginScreen
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen1
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen2
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen3
@@ -107,9 +105,6 @@ fun AgrisynergiApp(
             composable(Screen.OnBoarding5.route) {
                 OnBoardingScreen5(navController = navController)
             }
-            composable(Screen.Login.route){
-                LoginScreen(navController = navController)
-            }
             composable(Screen.Beranda.route) {
                 MainScreen(navHostController = navController, contentPadding = contentPadding)
             }
@@ -119,7 +114,6 @@ fun AgrisynergiApp(
             composable(Screen.Market.route) {
                 MarketScreen(navController = navController)
             }
-
             composable("detailmarket/{marketId}") { backStackEntry ->
                 val marketId = backStackEntry.arguments?.getString("marketId")?.toIntOrNull()
                 if (marketId != null) {
@@ -133,7 +127,6 @@ fun AgrisynergiApp(
 //                UserScreen(navController = navController)
 //            }
             composable(Screen.Konsultasi.route) {
-                ChatScreen(navController= navController)
             }
             composable(Screen.Notifikasi.route) {
                 NotifScreen(navController= navController)
