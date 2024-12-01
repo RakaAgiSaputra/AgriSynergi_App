@@ -68,7 +68,7 @@ import com.google.accompanist.pager.rememberPagerState
 
 @Composable
 fun TokoScreen(navController: NavHostController) {
-    Column {
+    Column (modifier = Modifier.fillMaxSize().background(Color.White)) {
         TokoSayaTopBar(
             onBackClick = { navController.navigateUp() }
         )
