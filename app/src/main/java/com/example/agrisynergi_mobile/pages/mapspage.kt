@@ -94,8 +94,8 @@ fun MapsScreen(navController: NavHostController) {
         // Lapisan bar atas
         mapsTopBar(
             onBackClick = { navController.navigateUp() },
-            onSearchClick = { query -> /* Handle query if needed */ },
-            mapView = mapView, // Pass mapView
+            onSearchClick = { query -> },
+            mapView = mapView,
             modifier = Modifier.zIndex(1f)
         )
 

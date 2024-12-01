@@ -1,6 +1,5 @@
 package com.example.agrisynergi_mobile
 
-import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +44,6 @@ import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.BeliScreen
 import com.example.agrisynergi_mobile.pages.CheckoutScreen
-import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.DetailMarketScreen
 import com.example.agrisynergi_mobile.pages.KeranjangScreen
 import com.example.agrisynergi_mobile.pages.MainScreen
@@ -53,8 +51,9 @@ import com.example.agrisynergi_mobile.pages.MapsScreen
 import com.example.agrisynergi_mobile.pages.MarketScreen
 import com.example.agrisynergi_mobile.pages.NotifScreen
 import com.example.agrisynergi_mobile.pages.SplashScreen
-import com.example.agrisynergi_mobile.pages.UserScreen
+import com.example.agrisynergi_mobile.pages.login.LoginRegistScreen
 import com.example.agrisynergi_mobile.pages.login.LoginScreen
+import com.example.agrisynergi_mobile.pages.login.RegisterScreen
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen1
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen2
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen3
@@ -107,6 +106,12 @@ fun AgrisynergiApp(
             composable(Screen.OnBoarding5.route) {
                 OnBoardingScreen5(navController = navController)
             }
+            composable(Screen.LoginRegist.route) {
+                LoginRegistScreen(navController)
+            }
+            composable(Screen.Regist.route) {
+                RegisterScreen(navController)
+            }
             composable(Screen.Login.route){
                 LoginScreen(navController = navController)
             }
@@ -129,9 +134,6 @@ fun AgrisynergiApp(
             composable(Screen.Forum.route) {
                 ForumScreen(navController = navController)
             }
-//            composable(Screen.User.route) {
-//                UserScreen(navController = navController)
-//            }
             composable(Screen.Konsultasi.route) {
                 ChatScreen(navController= navController)
             }

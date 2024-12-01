@@ -2,7 +2,9 @@ package com.example.agrisynergi_mobile.navigation
 
 sealed class Screen(val route: String) {
     object Beranda : Screen("beranda")
+    object LoginRegist: Screen("loginregist")
     object Login : Screen("login")
+    object Regist: Screen("regist")
     object Maps : Screen("maps")
     object Market : Screen("market")
     object Konsultasi : Screen("konsultasi")

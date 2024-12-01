@@ -44,7 +44,7 @@ interface Api {
 
 //RetrofilClient
 class RetrofitClient1 {
-    private val BASE_URL = "https://pretty-tips-sort.loca.lt/"
+    private val BASE_URL = "http://180.247.95.13:8080"
 
     val instance: Api by lazy {
         Retrofit.Builder()

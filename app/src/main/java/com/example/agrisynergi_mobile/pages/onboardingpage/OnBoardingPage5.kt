@@ -50,8 +50,8 @@ fun OnBoardingScreen5(
     val onBoardings = listOf(
         OnBoardingItem(
             resId = R.drawable.icononboarding5,
-            title = "Pemetaan Lahan yang Akurat",
-            description = "Dengan fitur pemetaan lahan AgriSynergy, Anda dapat memantau kondisi lahan secara real-time. Fitur ini membantu merencanakan dan memelihara lahan dengan lebih efisien"
+            title = "Mari Mulai!",
+            description = "AgriSynergy siap mendukung perjalanan Anda menuju pertanian yang lebih produktif dan menguntungkan. Mulai sekarang dan rasakan manfaatnya!"
         )
     )
 
@@ -118,7 +118,7 @@ fun OnBoardingScreen5(
                 ) {
                     Button(
                         onClick = {
-                            navController.navigate(Screen.Login.route)
+                            navController.navigate(Screen.LoginRegist.route)
                         },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF13382C))
