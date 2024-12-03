@@ -53,7 +53,6 @@ import com.example.agrisynergi_mobile.pages.NotifScreen
 import com.example.agrisynergi_mobile.pages.SplashScreen
 import com.example.agrisynergi_mobile.pages.login.LoginRegistScreen
 import com.example.agrisynergi_mobile.pages.login.LoginScreen
-import com.example.agrisynergi_mobile.pages.login.RegisterScreen
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen1
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen2
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen3
@@ -61,6 +60,7 @@ import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen4
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen5
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
 import com.example.agrisynergymobile.pages.ForumScreen
+import com.example.edugo_app.pages.RegisterScreen
 
 @Composable
 fun AgrisynergiApp(

@@ -110,4 +110,12 @@ dependencies {
     // Compose ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
 
+    //Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // Add OkHttp and HttpLoggingInterceptor dependencies
+    implementation ("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.10.0")
+
+
 }
