@@ -117,5 +117,12 @@ dependencies {
     implementation ("com.squareup.okhttp3:okhttp:4.10.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.10.0")
 
+    // declare dependencies using the latest version of Credential Manage
+
+    implementation("androidx.credentials:credentials:1.5.0-beta01")
+
+    // optional - needed for credentials support from play services, for devices running
+    // Android 13 and below.
+    implementation("androidx.credentials:credentials-play-services-auth:1.5.0-beta01")
 
 }
