@@ -106,7 +106,7 @@ fun LoginScreen(navController: NavController) {
                 password = it
             }, singleLine = true ,visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())
             Text("Forgot password?",fontSize = 12.sp, color = Color.Blue, modifier = Modifier.clickable(onClick = {
-//                navigationToSecondScreen()
+                 navController.navigate(Screen.ForgetPass.route)
             }))
 
 

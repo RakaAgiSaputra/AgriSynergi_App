@@ -51,8 +51,11 @@ import com.example.agrisynergi_mobile.pages.MapsScreen
 import com.example.agrisynergi_mobile.pages.MarketScreen
 import com.example.agrisynergi_mobile.pages.NotifScreen
 import com.example.agrisynergi_mobile.pages.SplashScreen
+import com.example.agrisynergi_mobile.pages.login.ForgetPassScreen
 import com.example.agrisynergi_mobile.pages.login.LoginRegistScreen
 import com.example.agrisynergi_mobile.pages.login.LoginScreen
+import com.example.agrisynergi_mobile.pages.login.OTPVerificationScreen
+import com.example.agrisynergi_mobile.pages.login.ResetPasswordScreen
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen1
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen2
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen3
@@ -114,6 +117,15 @@ fun AgrisynergiApp(
             }
             composable(Screen.Login.route){
                 LoginScreen(navController = navController)
+            }
+            composable(Screen.ForgetPass.route) {
+                ForgetPassScreen(navController)
+            }
+            composable(Screen.Otp.route) {
+                OTPVerificationScreen(navController)
+            }
+            composable(Screen.NewPass.route) {
+                ResetPasswordScreen(navController)
             }
             composable(Screen.Beranda.route) {
                 MainScreen(navHostController = navController, contentPadding = contentPadding)
