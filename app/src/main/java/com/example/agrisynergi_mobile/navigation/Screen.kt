@@ -4,7 +4,13 @@ sealed class Screen(val route: String) {
     object Beranda : Screen("beranda")
     object LoginRegist: Screen("loginregist")
     object Login : Screen("login")
+<<<<<<< HEAD
     object LoginWithGoogle : Screen("loginwithgoogle")
+=======
+    object Otp : Screen("otp")
+    object ForgetPass : Screen("forgetpass")
+    object NewPass : Screen("newpass")
+>>>>>>> origin/main
     object Regist: Screen("regist")
     object Maps : Screen("maps")
     object Market : Screen("market")
