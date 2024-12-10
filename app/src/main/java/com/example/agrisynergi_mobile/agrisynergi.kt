@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,9 +28,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -39,11 +41,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.User.UserProfileScreen
 import com.example.agrisynergi_mobile.consultant.ChatScreen
+import com.example.agrisynergi_mobile.Auth.firebase.GoogleAuth
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
-import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.BeliScreen
 import com.example.agrisynergi_mobile.pages.CheckoutScreen
+import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.DetailMarketScreen
 import com.example.agrisynergi_mobile.pages.KeranjangScreen
 import com.example.agrisynergi_mobile.pages.MainScreen
@@ -61,14 +64,24 @@ import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen5
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
 import com.example.agrisynergymobile.pages.ForumScreen
 import com.example.edugo_app.pages.RegisterScreen
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 @Composable
 fun AgrisynergiApp(
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    auth: FirebaseAuth
 ) {
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val credentialManager : CredentialManager = CredentialManager.create(context)
+
+    val startDestination = if (auth.currentUser != null) Screen.Beranda.route else
+        Screen.Splash.route
 
     Scaffold(
         topBar = {
@@ -85,7 +98,7 @@ fun AgrisynergiApp(
     ) { contentPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Splash.route,
+            startDestination = startDestination,
             modifier = modifier.padding(contentPadding)
         ) {
             composable(Screen.Splash.route) {
@@ -109,14 +122,30 @@ fun AgrisynergiApp(
             composable(Screen.LoginRegist.route) {
                 LoginRegistScreen(navController)
             }
+            composable(Screen.Login.route) {
+                LoginScreen(navController = navController,
+                    onSignInClick = {
+                            GoogleAuth(route = Screen.Beranda.route,
+                                auth = auth, context = context,
+                                credentialManager = credentialManager,
+                                scope = scope,
+                                navController = navController)
+                    })
+            }
             composable(Screen.Regist.route) {
-                RegisterScreen(navController)
+                RegisterScreen(navController, onRegisterClick = {
+//                    GoogleAuth(auth,credentialManager,scope,context,navController)
+                    GoogleAuth(route = Screen.Beranda.route,
+                        auth = auth, context = context,
+                        credentialManager = credentialManager,
+                        scope = scope,
+                        navController = navController)
+                })
             }
-            composable(Screen.Login.route){
-                LoginScreen(navController = navController)
-            }
+
             composable(Screen.Beranda.route) {
                 MainScreen(navHostController = navController, contentPadding = contentPadding)
+
             }
             composable(Screen.Maps.route) {
                 MapsScreen(navController = navController)
@@ -143,7 +172,16 @@ fun AgrisynergiApp(
            composable("user_profile") {
                 UserProfileScreen(
                     onOptionSelected = { /* Handle navigasi berdasarkan opsi */ },
-                    onBackClicked = { navController.popBackStack() }
+                    onBackClicked = { navController.popBackStack() },
+                    onSignOut = {
+                        auth.signOut()
+                        scope.launch {
+                            credentialManager.clearCredentialState(
+                                ClearCredentialStateRequest()
+                            )
+                        }
+                        navController.popBackStack()
+                    }
                 )
             }
             composable(Screen.Komunitas.route) {
@@ -175,6 +213,7 @@ fun AgrisynergiApp(
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -316,8 +355,3 @@ private fun BottomNavigationBar(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun AgrisynergiPreview() {
-    AgrisynergiApp()
-}
