@@ -13,6 +13,8 @@ import com.example.agrisynergi_mobile.consultant.ChatScreen
 import com.example.agrisynergi_mobile.ui.theme.Agrisynergi_MobileTheme
 
 class MainActivity : ComponentActivity() {
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

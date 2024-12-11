@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "79716735029",
+    "project_id": "alam-bahtera",
+    "storage_bucket": "alam-bahtera.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:79716735029:android:2bfb34fe2b7abc05e4b97c",
+        "android_client_info": {
+          "package_name": "com.example.agrisynergi_mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "79716735029-nbah8g4edvgblndc87jdg5ob1upioltg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.agrisynergi_mobile",
+            "certificate_hash": "8d99848a363de5a649f255d2dca1137696e1128a"
+          }
+        },
+        {
+          "client_id": "79716735029-f5ok3m4ihfpc65gagbi48p3ndlv8mlkn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARcQ_jig-cx4EpEow0Ny96zEMb843Kw9I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "79716735029-f5ok3m4ihfpc65gagbi48p3ndlv8mlkn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
