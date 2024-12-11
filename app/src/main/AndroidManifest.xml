@@ -73,6 +73,9 @@
         <activity
             android:name=".User.NewDropshipperActivity"
             android:exported="false" />
+        <activity
+            android:name=".User.AlamatActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

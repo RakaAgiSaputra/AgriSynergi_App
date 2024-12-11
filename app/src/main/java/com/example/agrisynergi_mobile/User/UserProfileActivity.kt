@@ -88,6 +88,9 @@ class UserProfileActivity : ComponentActivity() {
                         "Checkout" -> {
                             startActivity(Intent(this, CheckoutActivity::class.java))
                         }
+                        "Isi Alamat" -> {
+                            startActivity(Intent(this, AlamatActivity::class.java))
+                        }
                     }
                 },
                 onBackClicked = {
@@ -197,6 +200,7 @@ fun OptionsList(onOptionSelected: (String) -> Unit) {
         "Masukkan Diskon",
         "Done Checkout",
         "Checkout",
+        "Isi Alamat"
     )
 
     Column(
@@ -227,7 +231,7 @@ fun OptionsList(onOptionSelected: (String) -> Unit) {
                     "Masukkan Diskon" -> context.startActivity(Intent(context, AddDiscountCodeActivity::class.java))
                     "Done Checkout" -> context.startActivity(Intent(context, DoneCheckoutActivity::class.java))
                     "Checkout" -> context.startActivity(Intent(context, CheckoutActivity::class.java))
-
+                    "Isi Alamat" -> context.startActivity(Intent(context, AlamatActivity::class.java))
                 }
             }
             if (option == "Jadi Dropshipper" || option == "Log Out") {
