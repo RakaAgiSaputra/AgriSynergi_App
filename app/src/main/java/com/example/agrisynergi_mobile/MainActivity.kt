@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import com.example.agrisynergi_mobile.consultant.ChatScreen
 import com.example.agrisynergi_mobile.ui.theme.Agrisynergi_MobileTheme
 
 class MainActivity : ComponentActivity() {
@@ -23,9 +24,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
                     AgrisynergiApp(navController = navController)
-//                    MarketScreen()
-//                    CheckoutScreen()
-//                    BeliSekarangScreen()
                 }
             }
         }

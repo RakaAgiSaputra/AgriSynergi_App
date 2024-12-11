@@ -137,7 +137,7 @@ fun OnBoardingScreen1(
                     Button(
                         onClick = {
                             if (pagerState.currentPage == onBoardings.size - 1) {
-                                navController.navigate("beranda")
+                                navController.navigate("loginRegist")
                             } else {
                                 scope.launch {
                                     pagerState.animateScrollToPage(pagerState.currentPage + 1)

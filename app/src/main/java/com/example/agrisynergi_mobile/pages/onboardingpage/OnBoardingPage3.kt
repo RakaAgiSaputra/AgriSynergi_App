@@ -47,9 +47,9 @@ fun OnBoardingScreen3(
     val scope = rememberCoroutineScope()
     val onBoardings = listOf(
         OnBoardingItem(
-            resId = R.drawable.icononboarding5,
-            title = "Pemetaan Lahan yang Akurat",
-            description = "Dengan fitur pemetaan lahan AgriSynergy, Anda dapat memantau kondisi lahan secara real-time. Fitur ini membantu merencanakan dan memelihara lahan dengan lebih efisien"
+            resId = R.drawable.icononboarding3,
+            title = "Akses Pasar Langsung",
+            description = "Jual hasil panen Anda langsung kepada pembeli tanpa perantara. Fitur ini mempermudah akses ke pasar yang lebih luas dan menguntungkan Anda dengan harga yang lebih kompetitif"
         )
     )
 

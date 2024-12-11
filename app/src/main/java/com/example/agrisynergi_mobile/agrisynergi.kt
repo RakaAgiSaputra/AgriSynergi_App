@@ -1,6 +1,5 @@
 package com.example.agrisynergi_mobile
 
-import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -39,20 +38,27 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.User.UserProfileScreen
+import com.example.agrisynergi_mobile.consultant.ChatScreen
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
+import com.example.agrisynergi_mobile.pages.AgendaScreen
+import com.example.agrisynergi_mobile.pages.AntarKeCounterScreen
 import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.BeliScreen
 import com.example.agrisynergi_mobile.pages.CheckoutScreen
-import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.DetailMarketScreen
 import com.example.agrisynergi_mobile.pages.KeranjangScreen
 import com.example.agrisynergi_mobile.pages.MainScreen
 import com.example.agrisynergi_mobile.pages.MapsScreen
 import com.example.agrisynergi_mobile.pages.MarketScreen
 import com.example.agrisynergi_mobile.pages.NotifScreen
+import com.example.agrisynergi_mobile.pages.PengirimanScreen
+import com.example.agrisynergi_mobile.pages.AntarKeCounterScreen
+import com.example.agrisynergi_mobile.pages.CounterScreen
+import com.example.agrisynergi_mobile.pages.PickupScreen
 import com.example.agrisynergi_mobile.pages.SplashScreen
-import com.example.agrisynergi_mobile.pages.UserScreen
+import com.example.agrisynergi_mobile.pages.login.LoginRegistScreen
+import com.example.agrisynergi_mobile.pages.login.LoginScreen
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen1
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen2
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen3
@@ -60,6 +66,7 @@ import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen4
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen5
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
 import com.example.agrisynergymobile.pages.ForumScreen
+import com.example.edugo_app.pages.RegisterScreen
 
 @Composable
 fun AgrisynergiApp(
@@ -105,15 +112,32 @@ fun AgrisynergiApp(
             composable(Screen.OnBoarding5.route) {
                 OnBoardingScreen5(navController = navController)
             }
+            composable(Screen.LoginRegist.route) {
+                LoginRegistScreen(navController)
+            }
+            composable(Screen.Regist.route) {
+                RegisterScreen(navController)
+            }
+            composable(Screen.Login.route){
+                LoginScreen(navController = navController)
+            }
             composable(Screen.Beranda.route) {
                 MainScreen(navHostController = navController, contentPadding = contentPadding)
             }
             composable(Screen.Maps.route) {
                 MapsScreen(navController = navController)
             }
+            composable(Screen.Agenda.route) {
+                AgendaScreen(navController = navController)
+            }
+            composable("agenda/{agendaId}") { backStackEntry ->
+                val agendaId = backStackEntry.arguments?.getString("agendaId")?.toIntOrNull()
+                AgendaScreen(navController, agendaId)
+            }
             composable(Screen.Market.route) {
                 MarketScreen(navController = navController)
             }
+
             composable("detailmarket/{marketId}") { backStackEntry ->
                 val marketId = backStackEntry.arguments?.getString("marketId")?.toIntOrNull()
                 if (marketId != null) {
@@ -123,10 +147,8 @@ fun AgrisynergiApp(
             composable(Screen.Forum.route) {
                 ForumScreen(navController = navController)
             }
-//            composable(Screen.User.route) {
-//                UserScreen(navController = navController)
-//            }
             composable(Screen.Konsultasi.route) {
+                ChatScreen(navController= navController)
             }
             composable(Screen.Notifikasi.route) {
                 NotifScreen(navController= navController)
@@ -142,6 +164,15 @@ fun AgrisynergiApp(
             }
             composable(Screen.Komunitas.route) {
                 CommunityMemberScreen(navController = navController)
+            }
+            composable(Screen.Pengiriman.route) {
+                PengirimanScreen(navController = navController)
+            }
+            composable(Screen.Counter.route) {
+                CounterScreen(navController = navController)
+            }
+            composable(Screen.Pickup.route) {
+                PickupScreen(navController = navController)
             }
 
             composable("keranjang/{marketId}") { backStackEntry ->
