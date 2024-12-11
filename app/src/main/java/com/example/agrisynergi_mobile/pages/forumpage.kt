@@ -52,12 +52,12 @@ fun ForumScreen(navController: NavHostController) {
             // Custom Top Bar
             TopBarForum(
                 navController = navController,
-                onBackClick = { navController.navigateUp() }, // Navigasi kembali
+                onBackClick = { navController.navigateUp() },
                 onSearchClick = { query ->
-                    // Logika pencarian dapat ditambahkan di sini
+
                 },
                 onAddClick = {
-                    navController.navigate("addPostScreen") // Navigate to add post screen
+                    navController.navigate("addPostScreen")
                 },
                 onSearchQueryChange = { query ->
                     // Handle search query changes (optional)
