@@ -52,15 +52,18 @@ import com.example.agrisynergi_mobile.pages.MarketScreen
 import com.example.agrisynergi_mobile.pages.NotifScreen
 import com.example.agrisynergi_mobile.pages.SplashScreen
 import com.example.agrisynergi_mobile.pages.login.LoginRegistScreen
-import com.example.agrisynergi_mobile.pages.login.LoginScreen
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen1
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen2
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen3
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen4
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen5
+import com.example.agrisynergi_mobile.retrofit.model.view.LoginScreen
+import com.example.agrisynergi_mobile.retrofit.model.view.RegisterScreen
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.LoginViewModel
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
 import com.example.agrisynergymobile.pages.ForumScreen
-import com.example.edugo_app.pages.RegisterScreen
+import kotlin.math.log
 
 @Composable
 fun AgrisynergiApp(
@@ -69,6 +72,8 @@ fun AgrisynergiApp(
 ) {
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
+    val registerViewModel = RegisterViewModel()
+    val loginVewModel = LoginViewModel()
 
     Scaffold(
         topBar = {
@@ -110,10 +115,10 @@ fun AgrisynergiApp(
                 LoginRegistScreen(navController)
             }
             composable(Screen.Regist.route) {
-                RegisterScreen(navController)
+                RegisterScreen(navController,registerViewModel)
             }
             composable(Screen.Login.route){
-                LoginScreen(navController = navController)
+                LoginScreen(navController, loginVewModel )
             }
             composable(Screen.Beranda.route) {
                 MainScreen(navHostController = navController, contentPadding = contentPadding)
