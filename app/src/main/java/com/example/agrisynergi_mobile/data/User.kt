@@ -4,11 +4,11 @@ data class UserResponse(
     val success: Boolean,
     val code: Int,
     val message: String,
-    val data: List<UserData>,
+    val data: List<UserDataTest1>,
     val pagination: Pagination
 )
 
-data class UserData(
+data class UserDataTest1(
     val id_user: Int,
     val nama: String,
     val no_hp: String,

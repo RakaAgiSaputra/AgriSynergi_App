@@ -46,6 +46,7 @@ import com.example.agrisynergi_mobile.pages.AntarKeCounterScreen
 import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.BeliScreen
 import com.example.agrisynergi_mobile.pages.CheckoutScreen
+import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.DetailMarketScreen
 import com.example.agrisynergi_mobile.pages.KeranjangScreen
 import com.example.agrisynergi_mobile.pages.MainScreen
@@ -58,15 +59,18 @@ import com.example.agrisynergi_mobile.pages.CounterScreen
 import com.example.agrisynergi_mobile.pages.PickupScreen
 import com.example.agrisynergi_mobile.pages.SplashScreen
 import com.example.agrisynergi_mobile.pages.login.LoginRegistScreen
-import com.example.agrisynergi_mobile.pages.login.LoginScreen
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen1
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen2
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen3
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen4
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen5
+import com.example.agrisynergi_mobile.retrofit.model.view.LoginScreen
+import com.example.agrisynergi_mobile.retrofit.model.view.RegisterScreen
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.LoginViewModel
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
 import com.example.agrisynergymobile.pages.ForumScreen
-import com.example.edugo_app.pages.RegisterScreen
+import kotlin.math.log
 
 @Composable
 fun AgrisynergiApp(
@@ -75,6 +79,10 @@ fun AgrisynergiApp(
 ) {
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
+    val registerViewModel = RegisterViewModel()
+    val loginVewModel = LoginViewModel()
+
+
 
     Scaffold(
         topBar = {
@@ -116,7 +124,7 @@ fun AgrisynergiApp(
                 LoginRegistScreen(navController)
             }
             composable(Screen.Regist.route) {
-                RegisterScreen(navController)
+                RegisterScreen(navController,registerViewModel)
             }
             composable(Screen.Login.route){
                 LoginScreen(navController = navController)
@@ -147,6 +155,9 @@ fun AgrisynergiApp(
             composable(Screen.Forum.route) {
                 ForumScreen(navController = navController)
             }
+//            composable(Screen.User.route) {
+//                UserScreen(navController = navController)
+//            }
             composable(Screen.Konsultasi.route) {
                 ChatScreen(navController= navController)
             }
