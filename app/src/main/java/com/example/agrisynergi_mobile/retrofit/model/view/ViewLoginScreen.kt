@@ -63,7 +63,7 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel){
     LaunchedEffect(viewModel.loginResult.value) {
         if (viewModel.loginResult.value == "Login successful") {
             Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
-            navController.navigate(Screen.Konsultasi.route)
+            navController.navigate(Screen.Beranda.route)
         } else if (viewModel.loginResult.value.startsWith("Login failed")) {
             Toast.makeText(context, viewModel.loginResult.value, Toast.LENGTH_SHORT).show()
         }
