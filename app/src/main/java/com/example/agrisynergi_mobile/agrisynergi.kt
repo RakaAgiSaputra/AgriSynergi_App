@@ -75,6 +75,8 @@ fun AgrisynergiApp(
     val registerViewModel = RegisterViewModel()
     val loginVewModel = LoginViewModel()
 
+
+
     Scaffold(
         topBar = {
             BerandaTopBar(navController = navController, currentRoute = currentRoute)

@@ -57,7 +57,8 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel){
 
     var isLoading by remember { mutableStateOf(false) }
 
-    val context: Context = LocalContext.current
+    val context = LocalContext.current
+
 
     LaunchedEffect(viewModel.loginResult.value) {
         if (viewModel.loginResult.value == "Login successful") {
@@ -86,7 +87,13 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel){
                 androidx.compose.material.OutlinedTextField(value = username, onValueChange = {
                     username = it
                     isLoading = false
-                }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+                },
+                    modifier = Modifier.fillMaxWidth(), singleLine = true,
+                    colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = colorResource(R.color.hijau_muda),
+                        unfocusedBorderColor = colorResource(R.color.ijo),
+                        textColor = Color.Black )
+                    )
                 Text("Password",fontWeight = FontWeight.Medium)
                 androidx.compose.material.OutlinedTextField(
                     value = password,
@@ -96,7 +103,11 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel){
                     },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = colorResource(R.color.hijau_muda),
+                        unfocusedBorderColor = colorResource(R.color.ijo),
+                        textColor = Color.Black )
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("Forgot password?", style = TextStyle(
