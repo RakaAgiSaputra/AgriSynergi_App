@@ -127,7 +127,7 @@ fun AgrisynergiApp(
                 RegisterScreen(navController,registerViewModel)
             }
             composable(Screen.Login.route){
-                LoginScreen(navController = navController)
+                LoginScreen(navController, loginVewModel)
             }
             composable(Screen.Beranda.route) {
                 MainScreen(navHostController = navController, contentPadding = contentPadding)
