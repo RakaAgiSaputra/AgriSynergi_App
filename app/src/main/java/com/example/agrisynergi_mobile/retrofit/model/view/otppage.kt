@@ -1,4 +1,4 @@
-package com.example.agrisynergi_mobile.pages.login
+package com.example.agrisynergi_mobile.retrofit.model.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
