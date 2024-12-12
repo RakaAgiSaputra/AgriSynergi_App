@@ -38,7 +38,8 @@ import retrofit2.Call
 import retrofit2.Response
 
 @Composable
-fun RegisterScreen(navController: NavHostController, registerViewModel: RegisterViewModel) {
+fun RegisterScreen(
+    navController: NavHostController, registerViewModel: RegisterViewModel, registerWithGoogle:()->Unit) {
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
@@ -216,7 +217,7 @@ fun RegisterScreen(navController: NavHostController, registerViewModel: Register
                 modifier = Modifier.padding(vertical = 16.dp)
             )
             Button(
-                onClick = { /* Aksi Login Google */ },
+                onClick = { registerWithGoogle() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
