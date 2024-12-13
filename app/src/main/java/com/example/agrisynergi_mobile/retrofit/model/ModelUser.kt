@@ -3,8 +3,7 @@ package com.example.agrisynergi_mobile.retrofit.model
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
-
-data class LoginRequest(val username: String, val password: String)
+data class LoginRequest(val email: String, val katasandi: String)
 data class LoginResponse(val message: String, val token: String)
 
 @Parcelize
