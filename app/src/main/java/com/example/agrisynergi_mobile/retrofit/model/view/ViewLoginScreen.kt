@@ -51,18 +51,17 @@ import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.LoginViewMod
 
 
 @Composable
-fun LoginScreen(navController: NavController,viewModel: LoginViewModel){
+fun LoginScreen(navController: NavController,viewModel: LoginViewModel, context: Context,loginWithGoogle: () -> Unit){
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     var isLoading by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
-
 
     LaunchedEffect(viewModel.loginResult.value) {
         if (viewModel.loginResult.value == "Login successful") {
             Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+            navController.popBackStack()
             navController.navigate(Screen.Beranda.route)
         } else if (viewModel.loginResult.value.startsWith("Login failed")) {
             Toast.makeText(context, viewModel.loginResult.value, Toast.LENGTH_SHORT).show()
@@ -174,7 +173,9 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel){
                 Text("Or login with",fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
 
 
-                Row(modifier = Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                Row(modifier = Modifier.fillMaxWidth().padding(8.dp).clickable {
+                    loginWithGoogle()
+                }, horizontalArrangement = Arrangement.SpaceEvenly) {
                     Box(modifier = Modifier.background(Color.White, shape = RoundedCornerShape(16.dp)).padding(6.dp)){
                         Image(
                             painter = painterResource(R.drawable.google_1),

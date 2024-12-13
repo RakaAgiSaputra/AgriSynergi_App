@@ -1,5 +1,7 @@
 package com.example.agrisynergi_mobile
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +33,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -38,6 +44,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.User.UserProfileScreen
+import com.example.agrisynergi_mobile.auth.AuthWithGoogle
 import com.example.agrisynergi_mobile.consultant.ChatScreen
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
@@ -45,7 +52,6 @@ import com.example.agrisynergi_mobile.pages.AgendaScreen
 import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.BeliScreen
 import com.example.agrisynergi_mobile.pages.CheckoutScreen
-import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.DetailMarketScreen
 import com.example.agrisynergi_mobile.pages.KeranjangScreen
 import com.example.agrisynergi_mobile.pages.MainScreen
@@ -70,19 +76,32 @@ import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.LoginViewMod
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
 import com.example.agrisynergymobile.pages.ForumScreen
+import com.google.android.gms.auth.GoogleAuthException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.launch
+import java.io.IOException
 import kotlin.math.log
 
 @Composable
 fun AgrisynergiApp(
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    auth: FirebaseAuth,
 ) {
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
     val registerViewModel = RegisterViewModel()
     val loginVewModel = LoginViewModel()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val credentialManager = CredentialManager.create(context)
 
-
+    val startDestination = if (auth.currentUser == null ||
+        loginVewModel.loginResult.value == "" )  Screen.Splash.route else
+        Screen.Beranda.route
 
     Scaffold(
         topBar = {
@@ -99,7 +118,7 @@ fun AgrisynergiApp(
     ) { contentPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Splash.route,
+            startDestination = startDestination,
             modifier = modifier.padding(contentPadding)
         ) {
             composable(Screen.Splash.route) {
@@ -124,10 +143,37 @@ fun AgrisynergiApp(
                 LoginRegistScreen(navController)
             }
             composable(Screen.Regist.route) {
-                RegisterScreen(navController,registerViewModel)
+                RegisterScreen(
+                    navController = navController,
+                    registerViewModel = registerViewModel,
+                    registerWithGoogle = {
+                        AuthWithGoogle(
+                            scope = scope,
+                            context = context,
+                            credentialManager = credentialManager,
+                            auth = auth,
+                            navController = navController,
+                            isUserAgri = false
+                        )
+                    }
+                )
             }
             composable(Screen.Login.route){
-                LoginScreen(navController, loginVewModel)
+                LoginScreen(
+                    navController = navController,
+                    viewModel = loginVewModel,
+                    context = context,
+                    loginWithGoogle = {
+                        AuthWithGoogle(
+                            scope = scope,
+                            context = context,
+                            credentialManager = credentialManager,
+                            auth = auth,
+                            navController = navController,
+                            isUserAgri = true
+                        )
+                    }
+                )
             }
             composable(Screen.Beranda.route) {
                 MainScreen(navHostController = navController, contentPadding = contentPadding)
@@ -161,9 +207,6 @@ fun AgrisynergiApp(
             composable(Screen.Forum.route) {
                 ForumScreen(navController = navController)
             }
-//            composable(Screen.User.route) {
-//                UserScreen(navController = navController)
-//            }
             composable(Screen.Konsultasi.route) {
                 ChatScreen(navController= navController)
             }
@@ -173,7 +216,18 @@ fun AgrisynergiApp(
            composable("user_profile") {
                 UserProfileScreen(
                     onOptionSelected = { /* Handle navigasi berdasarkan opsi */ },
-                    onBackClicked = { navController.popBackStack() }
+                    onBackClicked = { navController.popBackStack() },
+                    onClickLogout = {
+                        loginVewModel.setLoginResult("")
+                            auth.signOut()
+                            scope.launch {
+                                credentialManager.clearCredentialState(
+                                    ClearCredentialStateRequest()
+                                )
+                            }
+
+                        navController.popBackStack()
+                    }
                 )
             }
             composable(Screen.Komunitas.route) {
@@ -358,5 +412,5 @@ private fun BottomNavigationBar(
 @Preview(showBackground = true)
 @Composable
 fun AgrisynergiPreview() {
-    AgrisynergiApp()
+//    AgrisynergiApp()
 }

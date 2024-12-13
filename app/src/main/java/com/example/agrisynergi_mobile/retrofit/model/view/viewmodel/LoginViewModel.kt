@@ -14,6 +14,11 @@ class LoginViewModel : ViewModel() {
     private val _loginResult = mutableStateOf<String>("")
     val loginResult: State<String> = _loginResult
 
+    fun setLoginResult(message: String) {
+        _loginResult.value = message
+    }
+
+
     // Fungsi login dengan Retrofit
     fun login(username: String, password: String) {
         viewModelScope.launch {

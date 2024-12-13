@@ -5,8 +5,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
 
+//        .baseUrl("https://knfqvrln-3000.asse.devtunnels.ms/")
+
     private val retrofit = Retrofit.Builder()
-        .baseUrl("https://knfqvrln-3000.asse.devtunnels.ms/")
+        .baseUrl("http://110.139.0.123:8080/api/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
