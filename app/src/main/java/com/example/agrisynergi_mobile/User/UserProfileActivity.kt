@@ -38,6 +38,7 @@ import com.example.agrisynergi_mobile.User.DoneCheckoutActivity
 import com.example.agrisynergi_mobile.User.DropshipperCatalog2Activity
 import com.example.agrisynergi_mobile.User.NewDropshipperActivity
 import com.example.agrisynergi_mobile.R
+import com.example.agrisynergi_mobile.navigation.Screen
 
 
 class UserProfileActivity : ComponentActivity() {
@@ -101,6 +102,9 @@ class UserProfileActivity : ComponentActivity() {
                         restoreState = true
                         launchSingleTop = true
                     }
+                },
+                onClickLogout = {
+
                 }
             )
         }
@@ -109,7 +113,7 @@ class UserProfileActivity : ComponentActivity() {
 
 
 @Composable
-fun UserProfileScreen(onOptionSelected: (String) -> Unit, onBackClicked: () -> Unit) {
+fun UserProfileScreen(onOptionSelected: (String) -> Unit, onBackClicked: () -> Unit, onClickLogout: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -122,7 +126,7 @@ fun UserProfileScreen(onOptionSelected: (String) -> Unit, onBackClicked: () -> U
         ) {
             UserProfileHeader(onBackClicked = onBackClicked)
             ProfileSection()
-            OptionsList(onOptionSelected)
+            OptionsList(onOptionSelected,onClickLogout)
         }
     }
 }
@@ -183,7 +187,7 @@ fun ProfileSection() {
 }
 
 @Composable
-fun OptionsList(onOptionSelected: (String) -> Unit) {
+fun OptionsList(onOptionSelected: (String) -> Unit, onClickLogout:()-> Unit) {
     val context = LocalContext.current
     val options = listOf(
         "Edit Profile",
@@ -231,6 +235,7 @@ fun OptionsList(onOptionSelected: (String) -> Unit) {
                     "Masukkan Diskon" -> context.startActivity(Intent(context, AddDiscountCodeActivity::class.java))
                     "Done Checkout" -> context.startActivity(Intent(context, DoneCheckoutActivity::class.java))
                     "Checkout" -> context.startActivity(Intent(context, CheckoutActivity::class.java))
+                    "Log Out" -> onClickLogout()
                     "Isi Alamat" -> context.startActivity(Intent(context, AlamatActivity::class.java))
                 }
             }
