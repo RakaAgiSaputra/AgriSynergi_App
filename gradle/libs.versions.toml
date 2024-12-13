@@ -13,6 +13,10 @@ navigationCompose = "2.8.4"
 osmdroid = "6.1.10"
 androidx-test-manifest = "1.4.0"
 places = "4.1.0"
+googleGmsGoogleServices = "4.4.2"
+firebaseAuth = "23.1.0"
+googleid = "1.1.1"
+playServicesAuthBase = "18.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,8 +37,12 @@ androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navig
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 osmdroid = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid"}
 places = { group = "com.google.android.libraries.places", name = "places", version.ref = "places" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
+play-services-auth-base = { group = "com.google.android.gms", name = "play-services-auth-base", version.ref = "playServicesAuthBase" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 
