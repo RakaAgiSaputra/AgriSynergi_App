@@ -173,7 +173,7 @@ fun ContentScreen(modifier: Modifier = Modifier, navController: NavHostControlle
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
                     Button(
-                        onClick = { navController.navigate("pengiriman") },
+                        onClick = { navController.navigate("agenda") },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .padding(all = 16.dp)

@@ -42,7 +42,6 @@ import com.example.agrisynergi_mobile.consultant.ChatScreen
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.pages.AgendaScreen
-import com.example.agrisynergi_mobile.pages.AntarKeCounterScreen
 import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
 import com.example.agrisynergi_mobile.pages.BeliScreen
 import com.example.agrisynergi_mobile.pages.CheckoutScreen
@@ -52,9 +51,10 @@ import com.example.agrisynergi_mobile.pages.KeranjangScreen
 import com.example.agrisynergi_mobile.pages.MainScreen
 import com.example.agrisynergi_mobile.pages.MapsScreen
 import com.example.agrisynergi_mobile.pages.MarketScreen
+import com.example.agrisynergi_mobile.pages.TokoScreen
+import com.example.agrisynergi_mobile.pages.DetailTokoScreen
 import com.example.agrisynergi_mobile.pages.NotifScreen
 import com.example.agrisynergi_mobile.pages.PengirimanScreen
-import com.example.agrisynergi_mobile.pages.AntarKeCounterScreen
 import com.example.agrisynergi_mobile.pages.CounterScreen
 import com.example.agrisynergi_mobile.pages.PickupScreen
 import com.example.agrisynergi_mobile.pages.SplashScreen
@@ -144,6 +144,12 @@ fun AgrisynergiApp(
             }
             composable(Screen.Market.route) {
                 MarketScreen(navController = navController)
+            }
+            composable(Screen.Toko.route) {
+                TokoScreen(navController = navController)
+            }
+            composable(Screen.DetailToko.route) {
+                DetailTokoScreen(navController = navController)
             }
 
             composable("detailmarket/{marketId}") { backStackEntry ->

@@ -11,6 +11,8 @@ sealed class Screen(val route: String) {
     object Otp :Screen("otp")
     object Maps : Screen("maps")
     object Market : Screen("market")
+    object Toko : Screen("toko")
+    object DetailToko : Screen("detailtoko")
     object Pengiriman : Screen("pengiriman")
     object Counter : Screen("counter")
     object Pickup : Screen("pickup")

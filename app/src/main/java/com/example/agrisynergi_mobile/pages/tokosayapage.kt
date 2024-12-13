@@ -68,7 +68,7 @@ import com.google.accompanist.pager.rememberPagerState
 
 @Composable
 fun TokoScreen(navController: NavHostController) {
-    Column (modifier = Modifier.fillMaxSize().background(Color.White)) {
+    Column {
         TokoSayaTopBar(
             onBackClick = { navController.navigateUp() }
         )
@@ -126,7 +126,7 @@ fun TokoSayaScreen(navController: NavHostController) {
         modifier = Modifier
             .fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = androidx.compose.ui.graphics.RectangleShape,
+        shape = RectangleShape,
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Spacer(modifier = Modifier.height(8.dp))
@@ -156,12 +156,14 @@ fun TokoSayaScreen(navController: NavHostController) {
             }
 
             OutlinedButton(
-                onClick = { /* Aksi kunjungi toko */ },
+                onClick = { navController.navigate("detailtoko") },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFFFFF))
             ) {
                 Text("Kunjungi toko", color = Color(0xFF5B8C51))
             }
+            Spacer(modifier = Modifier.width(24.dp))
         }
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
