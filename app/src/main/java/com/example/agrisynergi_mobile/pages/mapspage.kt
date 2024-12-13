@@ -1,7 +1,9 @@
 package com.example.agrisynergi_mobile.pages
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.IconButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -29,19 +32,25 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.example.agrisynergi_mobile.R
@@ -60,50 +69,70 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.Marker
+import coil.compose.rememberAsyncImagePainter
+import com.example.agrisynergi_mobile.database.SawahViewModel
 
 
 //MapsScreen Utama
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MapsScreen(navController: NavHostController) {
-    val context = LocalContext.current
-    val placesClient = Places.createClient(context)
+fun MapsScreen(viewModel: SawahViewModel, navController: NavHostController) {
+    val sawahList by viewModel.sawahList.collectAsState()
+    val selectedSawah by viewModel.selectedSawah.collectAsState()
 
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(-7.250445, 112.768845), 10f) // Jawa Timur Coordinates
-    }
+    // State for showing or hiding the BottomSheet
+    var showBottomSheet by remember { mutableStateOf(false) }
 
-    var sawahData by remember { mutableStateOf<List<Sawah>>(emptyList()) }
-
-    // Fetch Sawah data on composition
+    // Fetch sawah data on map load
     LaunchedEffect(Unit) {
-        try {
-            val response = RetrofitClient.apiService.getSawahData()
-            if (response.success) {
-                sawahData = response.data
-            }
-        } catch (e: Exception) {
-            Toast.makeText(context, "Error fetching data: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
+        viewModel.getSawahList() // Fetch all sawah data
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Peta dengan Marker
-        MyMapWithMarker(sawahData = sawahData) // Pass sawahData here
-
-        // Lapisan bar atas
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
         mapsTopBar(
             onBackClick = { navController.navigateUp() },
             onSearchClick = { query -> /* Handle search */ },
             modifier = Modifier.zIndex(1f)
         )
+        // Set up GoogleMap
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = rememberCameraPositionState {
+                position = CameraPosition.fromLatLngZoom(LatLng(-3.31669400, 114.59011100), 10f)
+            }
+        ) {
+            // Iterate through sawahList and place markers
+            sawahList.forEach { sawah ->
+                val latLng = LatLng(sawah.latitude.toDouble(), sawah.longitude.toDouble())
 
-        // Lapisan bar bawah (optional)
-//        if (showBottomSheetStatistic) {
-//            BottomSheetStatistic(onDismiss = { showBottomSheetStatistic = false })
-//        }
+                Marker(
+                    state = MarkerState(position = latLng),
+                    title = sawah.lokasi,
+                    snippet = sawah.deskripsi,
+                    onClick = {
+                        // Fetch selected sawah data when marker clicked
+                        viewModel.getSawahByLokasi(sawah.lokasi)
+                        showBottomSheet = true // Show BottomSheet
+                        true
+                    }
+                )
+            }
+        }
+    }
+
+    // Show BottomSheet with data when available
+    if (showBottomSheet && selectedSawah != null) {
+        BottomSheetMarking(
+            showBottomSheetMarking = showBottomSheet,  // Use showBottomSheet here
+            onShowBottomSheetChange = { showBottomSheet = it }, // Update showBottomSheet
+            selectedSawah = selectedSawah
+        )
     }
 }
+
+
 
 
 
@@ -126,6 +155,11 @@ fun MyMapWithMarker(sawahData: List<Sawah>) {
         position = CameraPosition.fromLatLngZoom(LatLng(-7.250445, 112.768845), 10f) // Default to Surabaya
     }
 
+    // State for BottomSheet visibility and selected Sawah object
+    var showBottomSheetMarking by remember { mutableStateOf(false) }
+    var selectedSawah by remember { mutableStateOf<Sawah?>(null) }
+
+
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState
@@ -133,16 +167,31 @@ fun MyMapWithMarker(sawahData: List<Sawah>) {
         // Add markers based on the sawah data
         sawahData.forEach { sawah ->
             val latLng = LatLng(sawah.latitude.toDouble(), sawah.longitude.toDouble())
+
             Marker(
                 state = MarkerState(position = latLng),
                 title = sawah.lokasi,
                 snippet = sawah.deskripsi,
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED) // Optional: Set custom marker color
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.iconlocjagung), // Custom icon
+                onClick = {
+                    // Set the selected Sawah object and show the BottomSheet
+                    selectedSawah = sawah
+                    showBottomSheetMarking = true
+                    true // Return true to indicate the click event is consumed
+                }
             )
         }
     }
-}
 
+    // Show BottomSheet with Sawah data when available
+    if (showBottomSheetMarking && selectedSawah != null) {
+        BottomSheetMarking(
+            showBottomSheetMarking = showBottomSheetMarking,
+            onShowBottomSheetChange = { showBottomSheetMarking = it },
+            selectedSawah = selectedSawah
+        )
+    }
+}
 
 //Pengaturan lokasi
 @Composable
@@ -195,26 +244,6 @@ fun mapsTopBar(
     )
 }
 
-
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BottomSheetStatistic(onDismiss: () -> Unit) {
-    ModalBottomSheet(
-        onDismissRequest = { onDismiss() }
-    ) {
-        Text(
-            text = "Informasi Statistik",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-
 //Pengaturan Bottom Bar Maps
 @Composable
 fun mapsBottomBar(
@@ -253,193 +282,234 @@ fun mapsBottomBar(
 }
 
 
-//
-////Pengaturan bottom shet untuk icon marking lokasi jagung
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun BottomSheetMarking(
-//    modifier: Modifier = Modifier,
-//    showBottomSheetMarking: Boolean,
-//    onShowBottomSheetChange: (Boolean) -> Unit,
-//    selectedLocation: GeoPoint?
-//) {
-//    val sheetState = rememberModalBottomSheetState()
-//
-//    if (showBottomSheetMarking) {
-//        ModalBottomSheet(
-//            onDismissRequest = { onShowBottomSheetChange(false) },
-//            sheetState = sheetState,
-//            modifier = Modifier
-//        ) {
-//            Column (
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .background(Color.White)
-//                    .padding(16.dp)
-//            ){
-//                Box(
-//                    modifier = Modifier
-//                        .shadow(5.dp, shape = RoundedCornerShape(16.dp))
-//                        .background(Color(0xFF13382C), shape = RoundedCornerShape(16.dp))
-//                        .padding(16.dp)
-//                        .align(Alignment.CenterHorizontally)
-//                        .width(300.dp)
-//                        .height(300.dp)
-//                ) {
-//                    Column(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(1.dp)
-//                    ) {
-//                        Row {
-//                            Box() {
-//                                Spacer(modifier = Modifier.height(20.dp))
-//                                Image (
-//                                    painter = painterResource(id = R.drawable.profilepetani),
-//                                    contentDescription = "profil Petani",
-//                                    modifier = Modifier
-//                                        .size(65.dp)
-//                                        .clip(CircleShape)
-//                                        .align(Alignment.Center),
-//                                    contentScale = ContentScale.Crop
-//                                )
-//                            }
-//                            Spacer(modifier = Modifier.width(8.dp))
-//                            Column (
-//                                modifier = Modifier
-//                                    .padding(3.dp),
-////                                verticalArrangement = Arrangement.Center
-//                            ) {
-//                                Box(
-//                                    modifier = Modifier
-//                                        .width(350.dp)
-//                                        .height(40.dp)
-//                                        .background(Color.Transparent)
-//                                        .padding(2.dp)
-//                                ) {
-//                                    Row(
-//                                        modifier = Modifier.fillMaxSize(),
-//                                        verticalAlignment = Alignment.CenterVertically
-//                                    ) {
-//                                        Text(
-//                                            text = "Alamat",
-//                                            style = TextStyle(
-//                                                fontSize = 9.sp,
-//                                                color = Color.White
-//                                            )
-//                                        )
-//                                        Spacer(modifier = Modifier.width(15.dp))
-//                                        Text(
-//                                            text = "Jl. Raya Bagusan, RT.5/RW.29, Bagusan, Terusan, Kec. Gedeg, Kabupaten Mojokerjo, Jawa Timur 613451",
-//                                            style = TextStyle(
-//                                                fontSize = 9.sp,
-//                                                color = Color.White
-//                                            )
-//                                        )
-//                                    }
-//                                }
-//                                Box(
-//                                    modifier = Modifier
-//                                        .width(350.dp)
-//                                        .height(20.dp)
-//                                        .background(Color.Transparent)
-//                                        .padding(2.dp)
-//                                ) {
-//                                    Row(
-//                                        modifier = Modifier.fillMaxSize(),
-//                                        verticalAlignment = Alignment.CenterVertically
-//                                    ) {
-//                                        Text(
-//                                            text = "Jam",
-//                                            style = TextStyle(
-//                                                fontSize = 9.sp,
-//                                                color = Color.White
-//                                            )
-//                                        )
-//                                        Spacer(modifier = Modifier.width(25.dp))
-//                                        Text(
-//                                            text = "Tutup - Buka Senin Pukul 06.00",
-//                                            style = TextStyle(
-//                                                fontSize = 9.sp,
-//                                                color = Color.White
-//                                            )
-//                                        )
-//                                    }
-//                                }
-//                                Box(
-//                                    modifier = Modifier
-//                                        .width(350.dp)
-//                                        .height(20.dp)
-//                                        .background(Color.Transparent)
-//                                        .padding(2.dp)
-//                                ) {
-//                                    Row(
-//                                        modifier = Modifier.fillMaxSize(),
-////                                        horizontalArrangement = Arrangement.SpaceBetween,
-//                                        verticalAlignment = Alignment.CenterVertically
-//                                    ) {
-//                                        Text(
-//                                            text = "Telepon",
-//                                            style = TextStyle(
-//                                                fontSize = 9.sp,
-//                                                color = Color.White
-//                                            )
-//                                        )
-//                                        Spacer(modifier = Modifier.width(15.dp))
-//                                        Text(
-//                                            text = "0897-1234-2345",
-//                                            style = TextStyle(
-//                                                fontSize = 9.sp,
-//                                                color = Color.White
-//                                            )
-//                                        )
-//                                    }
-//                                }
-//                            }
-//                        }
-//                        Spacer(modifier = Modifier.height(15.dp))
-//                        Column(
-//                        ) {
-//                            Text(
-//                                text = "Produksi Jagung",
-//                                style = TextStyle(
-//                                    fontSize = 14.sp,
-//                                    fontWeight = FontWeight.SemiBold,
-//                                    color = Color.White
-//                                )
-//                            )
-//                            Text(
-//                                text = "Total produksi jagung di daerah ini mencapai 8,500 ton pada tahun 2024, menunjukan peningkatan sebesar 5% dibandingkan tahun sebelumnya.",
-//                                style = TextStyle(
-//                                    fontSize = 12.sp,
-//                                    color = Color.White
-//                                )
-//                            )
-//                            Spacer(modifier = Modifier.height(15.dp))
-//                            Text(
-//                                text = "Produksi Jagung",
-//                                style = TextStyle(
-//                                    fontSize = 14.sp,
-//                                    fontWeight = FontWeight.SemiBold,
-//                                    color = Color.White
-//                                )
-//                            )
-//                            Text(
-//                                text = "Total produksi jagung di daerah ini mencapai 8,500 ton pada tahun 2024, menunjukan peningkatan sebesar 5% dibandingkan tahun sebelumnya.",
-//                                style = TextStyle(
-//                                    fontSize = 12.sp,
-//                                    color = Color.White
-//                                )
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//
-//}
+
+//Pengaturan bottom shet untuk icon marking lokasi jagung
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BottomSheetMarking(
+    showBottomSheetMarking: Boolean,
+    onShowBottomSheetChange: (Boolean) -> Unit,
+    selectedSawah: Sawah?
+) {
+    val sheetState = rememberModalBottomSheetState()
+
+    if (showBottomSheetMarking && selectedSawah != null) {
+        ModalBottomSheet(
+            onDismissRequest = { onShowBottomSheetChange(false) },
+            sheetState = sheetState,
+            modifier = Modifier
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    // Jawa Timur Box
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(Color(0xFF5B8C51), shape = RoundedCornerShape(8.dp))
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.iconloc),
+                                contentDescription = "Location Icon",
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Jawa Timur",
+                                color = Color.White,
+                                fontSize = 10.sp
+                            )
+                        }
+                    }
+
+                    // Tonnes of Corn Box
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(Color(0xFF5B8C51), shape = RoundedCornerShape(8.dp))
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.iconjagung),
+                                contentDescription = "Corn Icon",
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "1.300 ton",
+                                color = Color.White,
+                                fontSize = 10.sp
+                            )
+                        }
+                    }
+
+                    // Farmers Box
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(Color(0xFF5B8C51), shape = RoundedCornerShape(8.dp))
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.iconpetani),
+                                contentDescription = "Farmers Icon",
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "4 pertanian",
+                                color = Color.White,
+                                fontSize = 10.sp
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Box(
+                    modifier = Modifier
+                        .shadow(5.dp, shape = RoundedCornerShape(16.dp))
+                        .background(Color(0xFF5B8C51), shape = RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .width(330.dp)
+                        .height(500.dp)
+                ){
+                    Column(
+
+                    ) {
+                        if (selectedSawah != null) {
+                            Image(
+                                painter = rememberAsyncImagePainter(
+                                    model = "http://36.82.30.227:8080/images/${selectedSawah.foto_lokasi}",
+                                    error = painterResource(id = R.drawable.imagenotavail) // Optional: Set placeholder image if error
+                                ),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(180.dp)
+                                    .clip(RoundedCornerShape(10.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        //box informasi wilayah
+                        Box(
+                            modifier = Modifier
+                                .border(2.dp, Color.White, shape = RoundedCornerShape(16.dp)) // White border
+                                .background(Color.Transparent)
+                                .padding(16.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Column {
+                                if (selectedSawah!= null) {
+                                    Text(
+                                        text = "Lokasi: ${selectedSawah.lokasi}",
+                                        color = Color.White
+                                    )
+                                }
+                                if (selectedSawah != null) {
+                                    Text(
+                                        text = "Luas: ${selectedSawah.luas} ha",
+                                        color = Color.White
+                                    )
+                                }
+                                if (selectedSawah != null) {
+                                    Text(
+                                        text = "Jenis Tanah: ${selectedSawah.jenis_tanah}",
+                                        color = Color.White
+                                    )
+                                }
+                                if (selectedSawah != null) {
+                                    Text(
+                                        text = "Hasil Panen: ${selectedSawah.hasil_panen}",
+                                        color = Color.White
+                                    )
+                                }
+                                if (selectedSawah != null) {
+                                    Text(
+                                        text = "Deskripsi: ${selectedSawah.deskripsi}",
+                                        color = Color.White
+                                    )
+                                }
+                            }
+
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Description Box
+                        Box(
+                            modifier = Modifier
+                                .border(2.dp, Color.White, shape = RoundedCornerShape(16.dp))
+                                .background(Color.Transparent)
+                                .padding(16.dp)
+                                .fillMaxWidth()
+                        )  {
+                            Column {
+                                Text(
+                                    text = "Deskripsi",
+                                    color = Color.White
+                                )
+                                if (selectedSawah != null) {
+                                    Text(
+                                        text = "Description: ${selectedSawah.deskripsi}",
+                                        color = Color.White
+                                    )
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+@Composable
+fun SawahImage(url: String) {
+    Image(
+        painter = rememberAsyncImagePainter(
+            model = url,
+            error = painterResource(id = R.drawable.imagenotavail) // Placeholder jika gagal
+        ),
+        contentDescription = null,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp)
+            .clip(RoundedCornerShape(10.dp)),
+        contentScale = ContentScale.Crop
+    )
+}
 
 
 //

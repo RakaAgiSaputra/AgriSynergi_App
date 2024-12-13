@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -39,6 +40,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.User.UserProfileScreen
 import com.example.agrisynergi_mobile.consultant.ChatScreen
+import com.example.agrisynergi_mobile.database.SawahViewModel
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
@@ -131,7 +133,8 @@ fun AgrisynergiApp(
                 MainScreen(navHostController = navController)
             }
             composable(Screen.Maps.route) {
-                MapsScreen(navController = navController)
+                val viewModel: SawahViewModel = hiltViewModel()
+                MapsScreen(viewModel = viewModel, navController = navController)
             }
             composable(Screen.Market.route) {
                 MarketScreen(navController = navController)

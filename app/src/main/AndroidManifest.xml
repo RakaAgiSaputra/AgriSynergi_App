@@ -6,7 +6,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
+
     <application
+        android:name=".AgrySynergiApplication"
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config"
@@ -31,7 +33,7 @@
         </activity>
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyAd70gOu_asIH7cSWvNP8W5U3le8g51oiE" />
+            android:value="AIzaSyDq9gpB8vOgqZuxe3LeXL1NrKy6K38NQDA" />
 
         <activity
             android:name=".User.UserProfileActivity"
@@ -79,5 +81,7 @@
             android:name=".User.NewDropshipperActivity"
             android:exported="false" />
     </application>
+
+
 
 </manifest>

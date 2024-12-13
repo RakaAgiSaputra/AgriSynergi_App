@@ -11,14 +11,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.ui.theme.Agrisynergi_MobileTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Initialize the Places API with your API key
         if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, "YOUR_API_KEY")
+            Places.initialize(applicationContext, "AIzaSyDq9gpB8vOgqZuxe3LeXL1NrKy6K38NQDA")
         }
 
         enableEdgeToEdge()
