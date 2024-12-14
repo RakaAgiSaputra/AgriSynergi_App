@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
 
         // Initialize the Places API with your API key
         if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, "AIzaSyDq9gpB8vOgqZuxe3LeXL1NrKy6K38NQDA")
+            Places.initialize(applicationContext, "AIzaSyBao5aaWCaCB8mF6GS9kEjyv7MfsoiDq10")
         }
 
         enableEdgeToEdge()

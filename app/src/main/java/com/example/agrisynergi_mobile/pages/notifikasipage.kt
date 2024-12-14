@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.agrisynergi_mobile.R
 import androidx.compose.runtime.rememberCoroutineScope
-import com.example.agrisynergi_mobile.database.RetrofitClient
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

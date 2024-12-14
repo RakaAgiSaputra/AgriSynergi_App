@@ -1,7 +1,5 @@
 package com.example.agrisynergi_mobile
 
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -35,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
-import androidx.credentials.GetCredentialRequest
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -46,6 +44,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.User.UserProfileScreen
 import com.example.agrisynergi_mobile.auth.AuthWithGoogle
 import com.example.agrisynergi_mobile.consultant.ChatScreen
+import com.example.agrisynergi_mobile.database.SawahViewModel
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
@@ -70,14 +69,8 @@ import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.LoginViewMod
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
 import com.example.agrisynergymobile.pages.ForumScreen
-import com.google.android.gms.auth.GoogleAuthException
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
-import java.io.IOException
-import kotlin.math.log
 
 @Composable
 fun AgrisynergiApp(
@@ -174,7 +167,9 @@ fun AgrisynergiApp(
                 MainScreen(navHostController = navController, contentPadding = contentPadding)
             }
             composable(Screen.Maps.route) {
-                MapsScreen(navController = navController)
+                // Use the viewModel() function to get the ViewModel instance
+                val sawahViewModel: SawahViewModel = viewModel()
+                MapsScreen(viewModel = sawahViewModel, navController = navController)
             }
             composable(Screen.Market.route) {
                 MarketScreen(navController = navController)

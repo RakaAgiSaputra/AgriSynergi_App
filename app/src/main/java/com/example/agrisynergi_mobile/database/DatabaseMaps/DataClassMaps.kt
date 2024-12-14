@@ -29,4 +29,11 @@ data class Pagination(
     val current_page: Int,
     val total_pages: Int
 )
+sealed class SawahUiState {
+    object Loading : SawahUiState()
+    data class Success(val data: List<Sawah>) : SawahUiState()
+    data class Error(val message: String) : SawahUiState()
+    object Empty : SawahUiState() // Untuk menangani data kosong
+}
+
 

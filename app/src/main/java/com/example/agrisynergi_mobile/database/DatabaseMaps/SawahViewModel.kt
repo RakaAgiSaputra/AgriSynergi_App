@@ -5,9 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahResponse
 import com.example.agrisynergi_mobile.database.DatabaseMaps.Sawah
+import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahUiState
+import com.example.agrisynergi_mobile.retrofit.network.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import javax.inject.Inject
@@ -17,31 +20,32 @@ class SawahViewModel @Inject constructor(
     private val apiService: ApiService
 ) : ViewModel() {
 
-    // StateFlow untuk menyimpan daftar sawah yang diterima
-    private val _sawahList = MutableStateFlow<List<Sawah>>(emptyList())
-    val sawahList: StateFlow<List<Sawah>> get() = _sawahList
+    private val _sawahList = MutableStateFlow<SawahUiState>(SawahUiState.Loading)
+    val sawahList: StateFlow<SawahUiState> = _sawahList.asStateFlow()
 
-    // StateFlow untuk menyimpan sawah yang dipilih
     private val _selectedSawah = MutableStateFlow<Sawah?>(null)
     val selectedSawah: StateFlow<Sawah?> get() = _selectedSawah
 
-    // Fungsi untuk mengambil data sawah dari API
+    // Fetch the sawah list
     fun getSawahList() {
         viewModelScope.launch {
             try {
                 val response = apiService.getSawahList()
                 if (response.isSuccessful) {
-                    _sawahList.value = response.body()?.data ?: emptyList()
+                    val sawahData = response.body()?.data ?: emptyList()
+                    _sawahList.value = SawahUiState.Success(sawahData)
                 } else {
+                    _sawahList.value = SawahUiState.Error("Error fetching data: ${response.errorBody()?.string()}")
                     Log.e("SawahViewModel", "Error fetching data: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
+                _sawahList.value = SawahUiState.Error("Exception: ${e.message}")
                 Log.e("SawahViewModel", "Exception: ${e.message}")
             }
         }
     }
 
-    // Fungsi untuk mengambil data sawah berdasarkan lokasi
+    // Get sawah by location
     fun getSawahByLokasi(lokasi: String) {
         viewModelScope.launch {
             try {
@@ -57,4 +61,5 @@ class SawahViewModel @Inject constructor(
         }
     }
 }
+
 

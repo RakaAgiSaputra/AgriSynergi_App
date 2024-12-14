@@ -1,5 +1,6 @@
 package com.example.agrisynergi_mobile.pages
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -55,7 +56,6 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.database.DatabaseMaps.Sawah
-import com.example.agrisynergi_mobile.database.RetrofitClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -70,6 +70,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.Marker
 import coil.compose.rememberAsyncImagePainter
+import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahUiState
 import com.example.agrisynergi_mobile.database.SawahViewModel
 
 
@@ -77,61 +78,72 @@ import com.example.agrisynergi_mobile.database.SawahViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapsScreen(viewModel: SawahViewModel, navController: NavHostController) {
-    val sawahList by viewModel.sawahList.collectAsState()
+    val sawahState by viewModel.sawahList.collectAsState()
     val selectedSawah by viewModel.selectedSawah.collectAsState()
-
-    // State for showing or hiding the BottomSheet
     var showBottomSheet by remember { mutableStateOf(false) }
 
-    // Fetch sawah data on map load
     LaunchedEffect(Unit) {
-        viewModel.getSawahList() // Fetch all sawah data
+        viewModel.getSawahList()
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         mapsTopBar(
             onBackClick = { navController.navigateUp() },
             onSearchClick = { query -> /* Handle search */ },
             modifier = Modifier.zIndex(1f)
         )
-        // Set up GoogleMap
-        GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = rememberCameraPositionState {
-                position = CameraPosition.fromLatLngZoom(LatLng(-3.31669400, 114.59011100), 10f)
-            }
-        ) {
-            // Iterate through sawahList and place markers
-            sawahList.forEach { sawah ->
-                val latLng = LatLng(sawah.latitude.toDouble(), sawah.longitude.toDouble())
 
-                Marker(
-                    state = MarkerState(position = latLng),
-                    title = sawah.lokasi,
-                    snippet = sawah.deskripsi,
-                    onClick = {
-                        // Fetch selected sawah data when marker clicked
-                        viewModel.getSawahByLokasi(sawah.lokasi)
-                        showBottomSheet = true // Show BottomSheet
-                        true
+        when (sawahState) {
+            is SawahUiState.Loading -> {
+                // Display loading indicator
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+            is SawahUiState.Success -> {
+                val sawahList = (sawahState as SawahUiState.Success).data
+
+                // Set up GoogleMap and add markers for sawah
+                GoogleMap(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraPositionState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(LatLng(-3.31669400, 114.59011100), 10f)
                     }
+                ) {
+                    sawahList.forEach { sawah ->
+                        val latLng = LatLng(sawah.latitude.toDouble(), sawah.longitude.toDouble())
+
+                        Marker(
+                            state = MarkerState(position = latLng),
+                            title = sawah.lokasi,
+                            snippet = sawah.deskripsi,
+                            onClick = {
+                                viewModel.getSawahByLokasi(sawah.lokasi)
+                                showBottomSheet = true
+                                true
+                            }
+                        )
+                    }
+                }
+            }
+            is SawahUiState.Error -> {
+                Text(
+                    text = (sawahState as SawahUiState.Error).message,
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.Red
                 )
             }
+
+            SawahUiState.Empty -> TODO()
         }
     }
 
-    // Show BottomSheet with data when available
     if (showBottomSheet && selectedSawah != null) {
         BottomSheetMarking(
-            showBottomSheetMarking = showBottomSheet,  // Use showBottomSheet here
-            onShowBottomSheetChange = { showBottomSheet = it }, // Update showBottomSheet
+            showBottomSheetMarking = showBottomSheet,
+            onShowBottomSheetChange = { showBottomSheet = it },
             selectedSawah = selectedSawah
         )
     }
 }
-
 
 
 
