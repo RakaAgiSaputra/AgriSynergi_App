@@ -95,13 +95,11 @@ fun MapsScreen(viewModel: SawahViewModel, navController: NavHostController) {
 
         when (sawahState) {
             is SawahUiState.Loading -> {
-                // Display loading indicator
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
             is SawahUiState.Success -> {
                 val sawahList = (sawahState as SawahUiState.Success).data
 
-                // Set up GoogleMap and add markers for sawah
                 GoogleMap(
                     modifier = Modifier.fillMaxSize(),
                     cameraPositionState = rememberCameraPositionState {
@@ -162,12 +160,11 @@ fun MyMapScreen( ) {
 
 @Composable
 fun MyMapWithMarker(sawahData: List<Sawah>) {
-    // State for camera position
+    // camera position
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(-7.250445, 112.768845), 10f) // Default to Surabaya
     }
 
-    // State for BottomSheet visibility and selected Sawah object
     var showBottomSheetMarking by remember { mutableStateOf(false) }
     var selectedSawah by remember { mutableStateOf<Sawah?>(null) }
 
@@ -176,7 +173,7 @@ fun MyMapWithMarker(sawahData: List<Sawah>) {
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState
     ) {
-        // Add markers based on the sawah data
+        // Add markers
         sawahData.forEach { sawah ->
             val latLng = LatLng(sawah.latitude.toDouble(), sawah.longitude.toDouble())
 
@@ -186,16 +183,14 @@ fun MyMapWithMarker(sawahData: List<Sawah>) {
                 snippet = sawah.deskripsi,
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.iconlocjagung), // Custom icon
                 onClick = {
-                    // Set the selected Sawah object and show the BottomSheet
                     selectedSawah = sawah
                     showBottomSheetMarking = true
-                    true // Return true to indicate the click event is consumed
+                    true
                 }
             )
         }
     }
 
-    // Show BottomSheet with Sawah data when available
     if (showBottomSheetMarking && selectedSawah != null) {
         BottomSheetMarking(
             showBottomSheetMarking = showBottomSheetMarking,

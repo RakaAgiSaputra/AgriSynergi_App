@@ -26,7 +26,6 @@ class SawahViewModel @Inject constructor(
     private val _selectedSawah = MutableStateFlow<Sawah?>(null)
     val selectedSawah: StateFlow<Sawah?> get() = _selectedSawah
 
-    // Fetch the sawah list
     fun getSawahList() {
         viewModelScope.launch {
             try {
