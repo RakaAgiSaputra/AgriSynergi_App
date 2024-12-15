@@ -1,5 +1,6 @@
 package com.example.agrisynergi_mobile.retrofit.network
 
+import com.example.agrisynergi_mobile.database.testDatabase.ProdukResponse
 import com.example.agrisynergi_mobile.retrofit.model.LoginRequest
 import com.example.agrisynergi_mobile.retrofit.model.LoginResponse
 import com.example.agrisynergi_mobile.retrofit.model.User
@@ -13,6 +14,9 @@ import retrofit2.http.POST
 interface ApiService {
     @GET("auth/users")
     suspend fun getUsers(): List<User>
+
+    @GET("api/produk")
+    suspend fun getProduk(): Response<ProdukResponse>
 
 //    @POST("auth/register")
     @POST("register")

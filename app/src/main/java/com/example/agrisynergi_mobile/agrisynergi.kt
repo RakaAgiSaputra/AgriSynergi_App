@@ -73,6 +73,7 @@ import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen5
 import com.example.agrisynergi_mobile.retrofit.model.view.LoginScreen
 import com.example.agrisynergi_mobile.retrofit.model.view.RegisterScreen
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.LoginViewModel
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.MarketViewModel
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.SharedPreferenceManager
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
@@ -199,7 +200,7 @@ fun AgrisynergiApp(
                 AgendaScreen(navController, agendaId)
             }
             composable(Screen.Market.route) {
-                MarketScreen(navController = navController)
+                MarketScreen(navController = navController, viewModel = MarketViewModel())
             }
             composable(Screen.Toko.route) {
                 TokoScreen(navController = navController)

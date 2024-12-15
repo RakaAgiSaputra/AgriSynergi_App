@@ -1,5 +1,6 @@
 package com.example.agrisynergi_mobile.database.testDatabase
 
+import com.google.android.gms.common.api.Response
 import com.google.gson.annotations.SerializedName
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -19,6 +20,23 @@ data class User(
     @SerializedName("foto") val photo: String?
 )
 
+data class Produk(
+    val id_produk: Int,
+    val id_user: Int,
+    val id_kategori: Int,
+    val nama: String,
+    val harga: String,
+    val kuantitas: Int,
+    val deskripsi: String,
+    val tanggal_diposting: String,
+    val foto_produk: String,
+    val nama_kategori: String,
+    val rata_rating: String?,
+    val user_komen: String?,
+    val komentar: String?,
+    val tanggal_ulasan: String?
+)
+
 data class Pagination(
     @SerializedName("total") val total: Int,
     @SerializedName("per_page") val perPage: Int,
@@ -36,15 +54,27 @@ data class UserResponse(
     @SerializedName("errors") val errors: Any?
 )
 
+data class ProdukResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("code") val code: Int,
+    @SerializedName("message") val message: String,
+    @SerializedName("data") val data: List<Produk>,
+    @SerializedName("pagination") val pagination: Pagination,
+    @SerializedName("timestamp") val timestamp: String
+)
+
 //Api
 interface Api {
     @GET("api/users")
     fun getUsers(): Call<UserResponse>
+
+    @GET("api/produk")
+    fun getProduk(): Call<ProdukResponse>
 }
 
 //RetrofilClient
 class RetrofitClient1 {
-    private val BASE_URL = "http://180.247.95.13:8080"
+    private val BASE_URL = "http://36.74.31.200:8080/"
 
     val instance: Api by lazy {
         Retrofit.Builder()

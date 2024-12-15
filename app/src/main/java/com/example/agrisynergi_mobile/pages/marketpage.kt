@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +38,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -52,16 +55,50 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.data.Market
-import com.example.agrisynergi_mobile.data.datamarket
+import com.example.agrisynergi_mobile.database.testDatabase.Produk
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.MarketViewModel
+import androidx.compose.runtime.getValue
 
 @Composable
-fun MarketScreen(navController: NavHostController) {
+fun MarketScreen(
+    navController: NavHostController,
+    viewModel: MarketViewModel
+) {
+    val products: List<Produk> by viewModel.products.collectAsState(initial = emptyList())
+    val isLoading: Boolean by viewModel.isLoading.collectAsState(initial = false)
+    val error: String? by viewModel.error.collectAsState(initial = null)
+
+    // Trigger fetch when screen is first loaded
+    LaunchedEffect(Unit) {
+        viewModel.fetchProducts()
+    }
+
     Column {
         MarketTopBar(
             onBackClick = { navController.navigateUp() }
         )
         MarketSearch()
-        MarketGrid(navController, datamarket.markets)
+        // Handle loading and error states
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            error != null -> {
+                Text(
+                    text = "Error: $error",
+                    color = Color.Red,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+            else -> {
+                MarketGrid(navController, products)
+            }
+        }
     }
 }
 
@@ -159,14 +196,14 @@ fun MarketSearch() {
 }
 
 @Composable
-fun MarketItem(navController: NavHostController, market: Market) {
+fun MarketItem(navController: NavHostController, produk: Produk) {
     Card(
         modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth()
             .height(230.dp)
             .clickable {
-                navController.navigate("detailmarket/${market.id}")
+                navController.navigate("detailmarket/${produk.id_produk}")
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = RoundedCornerShape(12.dp),
@@ -179,8 +216,10 @@ fun MarketItem(navController: NavHostController, market: Market) {
             modifier = Modifier.padding(16.dp)
         ) {
             Image(
-                painter = rememberImagePainter(data = market.imageUrl),
-                contentDescription = "Image Market",
+                painter = rememberImagePainter(
+                    data = "http://36.74.31.200:8080/uploads/${produk.foto_produk}"
+                ),
+                contentDescription = "Image Produk",
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp)
@@ -189,7 +228,7 @@ fun MarketItem(navController: NavHostController, market: Market) {
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = market.title,
+                text = produk.nama,
                 style = TextStyle(
                     fontSize = 14.sp,
                     color = Color.Black,
@@ -199,7 +238,7 @@ fun MarketItem(navController: NavHostController, market: Market) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = market.description,
+                text = produk.deskripsi,
                 style = TextStyle(
                     fontSize = 12.sp,
                     color = Color.Gray,
@@ -209,7 +248,7 @@ fun MarketItem(navController: NavHostController, market: Market) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = market.price,
+                text = "Rp${produk.harga}",
                 style = TextStyle(
                     fontSize = 13.sp,
                     color = Color.Black,
@@ -222,15 +261,15 @@ fun MarketItem(navController: NavHostController, market: Market) {
 }
 
 @Composable
-fun MarketGrid(navController: NavHostController, items: List<Market>) {
+fun MarketGrid(navController: NavHostController, items: List<Produk>) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        items(items) { market ->
-            MarketItem(navController, market)
+        items(items) { produk ->
+            MarketItem(navController, produk)
         }
     }
 }
