@@ -4,5 +4,3 @@
         <domain includeSubdomains="true">36.74.31.200</domain> /*Ganti setiap API berubah*/
     </domain-config>
 </network-security-config>
-
-

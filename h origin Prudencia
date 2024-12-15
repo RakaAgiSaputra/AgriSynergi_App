@@ -1,0 +1,73 @@
+[33m2a6b8e3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mPrudencia[m[33m)[m Resolve merge conflicts and merge main into Prudencia
+[33m6597094[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #5 from RakaAgiSaputra/raka
+[33m32fd95e[m[33m ([m[1;31morigin/raka[m[33m)[m raka: upadate network
+[33m27908de[m[33m ([m[1;31morigin/Prudencia[m[33m, [m[1;31mPrudencia/Prudencia[m[33m)[m Prudencia: hilt maps
+[33m0405389[m Merge pull request #4 from RakaAgiSaputra/raka
+[33m13e131f[m raka: test save token with room dao, and sharedpreference
+[33m221d78e[m Merge pull request #3 from RakaAgiSaputra/raka
+[33m5b9e9d9[m raka: require firebase
+[33ma3b562f[m raka: add gms
+[33m56ce649[m raka: add WEB_CLIENT_ID
+[33m7cd0598[m raka: mengatur paramater
+[33m3f71da0[m raka: mengataur parameter
+[33mf9fbdbd[m raka: setter loginresult
+[33m48df52f[m raka: edited parameter loginscreen
+[33m7c9c4b1[m raka: initialize firebaseauth
+[33m21515b5[m raka: membuat function AuthWithGoogle
+[33mb7a0335[m raka: mengatur routing register,login dan logout
+[33m68ea2d4[m raka: main file algoritma
+[33m5471240[m raka: initialize algoritma with c++
+[33m9941502[m Merge pull request #2 from RakaAgiSaputra/raka
+[33me333154[m raka: after login to beranda
+[33ma2e6c48[m raka: add google-services.json
+[33mb94e397[m Prudencia: backend Marking lokasi done
+[33m115e9ce[m raka: update toast
+[33m5dc0a14[m Merge pull request #1 from RakaAgiSaputra/raka
+[33mf5ff3c7[m raka: menambahkan api service, object retrofitInstance,serta struktur mvvm login register
+[33m56b5eb7[m Merge branch 'main' of https://github.com/RakaAgiSaputra/AgriSynergi_App into Prudencia
+[33m7ce9639[m Prudencia: Perbaikan halaman
+[33mbbbdc59[m Prudencia: q q
+[33m536c5d2[m Save local changes
+[33ma3e2c3a[m Prudencia: typo
+[33m6aa4e04[m raka: menambahkan authentification login and register, routing
+[33m5a0d21b[m raka: routing for login and regiter
+[33m779bd7d[m Merge branch 'Prudencia'
+[33m73b92f5[m Prudencia = newpass, otp, forgetpass
+[33m77c7097[m raka: membuat package authmanager and google auth
+[33m12b2215[m raka: mengatur tampilan logo dilayar hp dan  declare dependencies using the latest version of Credential Manage
+[33me502d34[m Prudencia = Backend daftar
+[33mbe360cc[m Prudencia = perbaikan onboarding, daftar page, login regist page
+[33m5642144[m ario: page penjualan saya
+[33maf4524e[m Add files via upload
+[33m855bfcd[m penambahan page agenda dan toko saya
+[33me7d5b5c[m raka: menambahkan navigasi dari onboarding to login screen and add login screeen
+[33m89c869f[m raka: menambahkan consultan atau chatscreen
+[33m2714036[m Merge branch 'main' of https://github.com/RakaAgiSaputra/AgriSynergi_App
+[33m353e43d[m Merge branch 'sulfia' of https://github.com/RakaAgiSaputra/AgriSynergi_App
+[33m2bb2d88[m Merge branch 'main' of https://github.com/RakaAgiSaputra/AgriSynergi_App
+[33mfd79b2d[m Prudencia = Penggunaan Api Retrofit, contoh pengambilan database user di halaman notifikasi
+[33m8f0a5f4[m raka: Update konek data, navigation, keranjang, belisekarang, dan checkout
+[33mee9e12f[m Merge remote-tracking branch 'origin/main'
+[33m838d598[m sulfia: satuin main tambah user newdropship
+[33mfd46cb6[m sulfia: tambah tutor dropship
+[33ma087942[m Prudencia = test database sqlite
+[33m5d894aa[m sulfia: nav intent user
+[33m6b6ece9[m sulfia: menambahkan user
+[33m506c0bf[m Prudencia = Perubahan halaman komunitas dan revisi forum
+[33m77ada51[m Prudencia = Perubahan beranda, forum, dam maps
+[33m0d4dc28[m Memperbaiki beranda, forum, onboarding, dan maps
+[33m752a049[m raka: merge file
+[33mf19624d[m raka:update file
+[33m8604a5e[m Update README.md
+[33maca7c33[m raka: update file project
+[33mdf14470[m Update README.md
+[33m58dae7a[m Update README.md
+[33ma34c37a[m Update README.md
+[33m5588ad4[m Update README.md
+[33m99fd463[m Update README.md
+[33m8d5c69d[m Update README.md
+[33m3c80339[m Update README.md
+[33m4cf3590[m Update README.md
+[33m99fb6a1[m raka: menambahkan punya sulfia \n noted: blm neglink navhost user
+[33m54c1614[m raka: initial file project
+[33m0bd4e01[m raka: First commit
