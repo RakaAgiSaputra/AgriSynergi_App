@@ -31,8 +31,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -44,7 +44,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.User.UserProfileScreen
 import com.example.agrisynergi_mobile.auth.AuthManageer
 import com.example.agrisynergi_mobile.consultant.ChatScreen
-import com.example.agrisynergi_mobile.database.SawahViewModel
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.pages.CommunityMemberScreen
@@ -69,9 +68,9 @@ import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.LoginViewMod
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.SharedPreferenceManager
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
+import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahViewModel
 import com.example.agrisynergymobile.pages.ForumScreen
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.launch
 
 @Composable
 fun AgrisynergiApp(
@@ -176,8 +175,7 @@ fun AgrisynergiApp(
                 MainScreen(navHostController = navController, contentPadding = contentPadding)
             }
             composable(Screen.Maps.route) {
-                // Use the viewModel() function to get the ViewModel instance
-                val sawahViewModel: SawahViewModel = viewModel()
+                val sawahViewModel: SawahViewModel = hiltViewModel()
                 MapsScreen(viewModel = sawahViewModel, navController = navController)
             }
             composable(Screen.Market.route) {

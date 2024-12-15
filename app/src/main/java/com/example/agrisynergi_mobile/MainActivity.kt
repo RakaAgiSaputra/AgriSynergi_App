@@ -11,13 +11,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
+import com.example.agrisynergi_mobile.retrofit.network.RetrofitInstance
 import com.example.agrisynergi_mobile.ui.theme.Agrisynergi_MobileTheme
-
-import dagger.hilt.android.AndroidEntryPoint
+import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahViewModel
 
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import dagger.hilt.android.AndroidEntryPoint
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -27,10 +29,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize the Places API with your API key
         if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, "AIzaSyBao5aaWCaCB8mF6GS9kEjyv7MfsoiDq10")
+            Places.initialize(applicationContext, "AIzaSyBMv4uLFCw4dP2l2q3lg6oRZC0LPCQ20xk")
         }
+
 
         enableEdgeToEdge()
         auth = Firebase.auth

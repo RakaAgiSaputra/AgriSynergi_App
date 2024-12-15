@@ -13,22 +13,26 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface ApiService {
+
+    // Fetch all users
     @GET("auth/users")
     suspend fun getUsers(): List<User>
 
-//    @POST("auth/register")
+    // Register a new user
     @POST("register")
     suspend fun registerUser(@Body userRequest: UserRequest): Response<UserResponse>
 
-//    @POST("auth/login")
+    // User login
     @POST("login")
     suspend fun login(@Body loginRequest: LoginRequest): LoginResponse
 
+    // ambil data berdasarkan lokasi
     @GET("sawah")
     suspend fun getSawahByLokasi(@Query("lokasi") lokasi: String): Response<SawahResponse>
 
-    // New endpoint to fetch all sawah
+    // ambil semua list data sawah
     @GET("sawah")
-    suspend fun getSawahList(): Response<SawahResponse> // Fetch all sawah data
+    suspend fun getSawahList(): Response<SawahResponse>
+
 
 }

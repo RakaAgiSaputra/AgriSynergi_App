@@ -7,13 +7,10 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("kotlin-parcelize")
 
-    id ("com.google.dagger.hilt.android")
+    id("dagger.hilt.android.plugin")
     id("org.jetbrains.kotlin.kapt")
 
     alias(libs.plugins.google.gms.google.services)
-
-    id ("kotlin-kapt")
-
 
 }
 
@@ -166,18 +163,18 @@ dependencies {
     implementation ("com.google.android.gms:play-services-location:18.0.0")
 
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.48.1")
-    kapt("com.google.dagger:hilt-compiler:2.48.1")
+    implementation ("com.google.dagger:hilt-android:2.48.1")
+    kapt ("com.google.dagger:hilt-compiler:2.48.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.48.1")
     kaptAndroidTest("com.google.dagger:hilt-compiler:2.48.1")
 
-
-    // Room
+// Room
     implementation("androidx.room:room-runtime:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("androidx.preference:preference-ktx:1.2.0")
+
 
     // ViewModel dependencies
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")

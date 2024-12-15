@@ -1,14 +1,12 @@
 package com.example.agrisynergi_mobile.pages
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,10 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.IconButton
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -47,93 +42,78 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.database.DatabaseMaps.Sawah
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.net.FetchPlaceRequest
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.Marker
 import coil.compose.rememberAsyncImagePainter
-import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahUiState
-import com.example.agrisynergi_mobile.database.SawahViewModel
+import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahViewModel
 
 
 //MapsScreen Utama
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MapsScreen(viewModel: SawahViewModel, navController: NavHostController) {
-    val sawahState by viewModel.sawahList.collectAsState()
+fun MapsScreen(viewModel: SawahViewModel = hiltViewModel(), navController: NavHostController) {
+
+    val sawahList by viewModel.sawahList.collectAsState()
     val selectedSawah by viewModel.selectedSawah.collectAsState()
+
     var showBottomSheet by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        viewModel.getSawahList()
+    LaunchedEffect(key1 = Unit) {
+        viewModel.fetchSawahData()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        // Top Bar
         mapsTopBar(
             onBackClick = { navController.navigateUp() },
-            onSearchClick = { query -> /* Handle search */ },
+            onSearchClick = { query -> /* belum ada */ },
             modifier = Modifier.zIndex(1f)
         )
 
-        when (sawahState) {
-            is SawahUiState.Loading -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-            is SawahUiState.Success -> {
-                val sawahList = (sawahState as SawahUiState.Success).data
+        val cameraPositionState = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(LatLng(-3.31669400, 114.59011100), 10f)
+        }
 
-                GoogleMap(
-                    modifier = Modifier.fillMaxSize(),
-                    cameraPositionState = rememberCameraPositionState {
-                        position = CameraPosition.fromLatLngZoom(LatLng(-3.31669400, 114.59011100), 10f)
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState
+        ) {
+            sawahList.forEach { sawah ->
+                val latLng = LatLng(
+                    sawah.latitude.toDoubleOrNull() ?: 0.0,
+                    sawah.longitude.toDoubleOrNull() ?: 0.0
+                )
+                Log.d("MapsScreen", "Adding marker: ${sawah.lokasi}, Lat: ${latLng.latitude}, Lng: ${latLng.longitude}")
+                Marker(
+                    state = MarkerState(position = latLng),
+                    title = sawah.lokasi,
+                    snippet = sawah.deskripsi,
+                    icon = BitmapDescriptorFactory.fromResource(R.drawable.iconlocjagung), // Custom icon
+                    onClick = {
+                        viewModel.getSawahByLokasi(sawah.lokasi)
+                        showBottomSheet = true
+                        true
                     }
-                ) {
-                    sawahList.forEach { sawah ->
-                        val latLng = LatLng(sawah.latitude.toDouble(), sawah.longitude.toDouble())
-
-                        Marker(
-                            state = MarkerState(position = latLng),
-                            title = sawah.lokasi,
-                            snippet = sawah.deskripsi,
-                            onClick = {
-                                viewModel.getSawahByLokasi(sawah.lokasi)
-                                showBottomSheet = true
-                                true
-                            }
-                        )
-                    }
-                }
-            }
-            is SawahUiState.Error -> {
-                Text(
-                    text = (sawahState as SawahUiState.Error).message,
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color.Red
                 )
             }
-
-            SawahUiState.Empty -> TODO()
         }
     }
 
+    // Bottom Sheet
     if (showBottomSheet && selectedSawah != null) {
         BottomSheetMarking(
             showBottomSheetMarking = showBottomSheet,
@@ -145,14 +125,12 @@ fun MapsScreen(viewModel: SawahViewModel, navController: NavHostController) {
 
 
 
-
-
 @Composable
 fun MyMapScreen( ) {
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         onMapLoaded = {
-// Peta telah dimuat, lakukan sesuatu jika diperlukan
+// Peta
 
         }
     )
@@ -160,7 +138,6 @@ fun MyMapScreen( ) {
 
 @Composable
 fun MyMapWithMarker(sawahData: List<Sawah>) {
-    // camera position
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(-7.250445, 112.768845), 10f) // Default to Surabaya
     }
@@ -168,14 +145,15 @@ fun MyMapWithMarker(sawahData: List<Sawah>) {
     var showBottomSheetMarking by remember { mutableStateOf(false) }
     var selectedSawah by remember { mutableStateOf<Sawah?>(null) }
 
-
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState
     ) {
-        // Add markers
         sawahData.forEach { sawah ->
-            val latLng = LatLng(sawah.latitude.toDouble(), sawah.longitude.toDouble())
+            val latLng = LatLng(
+                sawah.latitude.toDoubleOrNull() ?: 0.0,
+                sawah.longitude.toDoubleOrNull() ?: 0.0
+            )
 
             Marker(
                 state = MarkerState(position = latLng),
@@ -247,47 +225,65 @@ fun mapsTopBar(
                 Icon(Icons.Default.Search, contentDescription = "Search")
             }
         },
+        backgroundColor = Color(0xFF5B8C51),
         modifier = modifier
     )
 }
 
-//Pengaturan Bottom Bar Maps
-@Composable
-fun mapsBottomBar(
-    navController: NavHostController,
-    showBottomSheet: Boolean,
-    onShowBottomSheetChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Color.Transparent)
-            .padding(8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Button(
-                onClick = { onShowBottomSheetChange(true) },
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF13382C))
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.icondiagram),
-                    contentDescription = "Statistik",
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.White
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Statistik", color = Color.White)
-            }
-        }
-    }
-}
 
+//Pengaturan Bottom Bar Maps
+//@Composable
+//fun mapsBottomBar(
+//    navController: NavHostController,
+//    showBottomSheet: Boolean,
+//    onShowBottomSheetChange: (Boolean) -> Unit,
+//    modifier: Modifier = Modifier) {
+//    Column(
+//        modifier = modifier
+//            .fillMaxWidth()
+//            .background(Color.Transparent)
+//            .padding(8.dp)
+//    ) {
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(horizontal = 16.dp),
+//            horizontalArrangement = Arrangement.SpaceEvenly
+//        ) {
+//            Button(
+//                onClick = { onShowBottomSheetChange(true) },
+//                shape = CircleShape,
+//                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF13382C))
+//            ) {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.icondiagram),
+//                    contentDescription = "Statistik",
+//                    modifier = Modifier.size(20.dp),
+//                    tint = Color.White
+//                )
+//                Spacer(modifier = Modifier.width(8.dp))
+//                Text(text = "Statistik", color = Color.White)
+//            }
+//        }
+//    }
+//}
+
+
+//@Composable
+//fun BottomSheetMarking(
+//    showBottomSheetMarking: Boolean,
+//    onShowBottomSheetChange: (Boolean) -> Unit,
+//    selectedSawah: Sawah?
+//) {
+//    // You can use a BottomSheetScaffold or similar approach for this
+//    if (showBottomSheetMarking) {
+//        // Display the bottom sheet content here
+//        Text(
+//            text = "Sawah: ${selectedSawah?.lokasi}",
+//            modifier = Modifier.fillMaxWidth().padding(16.dp)
+//        )
+//    }
+//}
 
 
 //Pengaturan bottom shet untuk icon marking lokasi jagung
@@ -323,7 +319,7 @@ fun BottomSheetMarking(
                         modifier = Modifier
                             .weight(1f)
                             .background(Color(0xFF5B8C51), shape = RoundedCornerShape(8.dp))
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .padding(horizontal = 8.dp, vertical = 8.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -334,7 +330,7 @@ fun BottomSheetMarking(
                                 tint = Color.Unspecified,
                                 modifier = Modifier.size(15.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(1.dp))
                             Text(
                                 text = "Jawa Timur",
                                 color = Color.White,
@@ -348,7 +344,7 @@ fun BottomSheetMarking(
                         modifier = Modifier
                             .weight(1f)
                             .background(Color(0xFF5B8C51), shape = RoundedCornerShape(8.dp))
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .padding(horizontal = 8.dp, vertical = 8.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -373,7 +369,7 @@ fun BottomSheetMarking(
                         modifier = Modifier
                             .weight(1f)
                             .background(Color(0xFF5B8C51), shape = RoundedCornerShape(8.dp))
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .padding(horizontal = 8.dp, vertical = 8.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -403,7 +399,7 @@ fun BottomSheetMarking(
                         .padding(16.dp)
                         .align(Alignment.CenterHorizontally)
                         .width(330.dp)
-                        .height(500.dp)
+                        .height(600.dp)
                 ){
                     Column(
 
@@ -411,7 +407,7 @@ fun BottomSheetMarking(
                         if (selectedSawah != null) {
                             Image(
                                 painter = rememberAsyncImagePainter(
-                                    model = "http://36.82.30.227:8080/images/${selectedSawah.foto_lokasi}",
+                                    model = "http://36.74.31.200:8080/images/${selectedSawah?.foto_lokasi}",
                                     error = painterResource(id = R.drawable.imagenotavail) // Optional: Set placeholder image if error
                                 ),
                                 contentDescription = null,
@@ -421,6 +417,7 @@ fun BottomSheetMarking(
                                     .clip(RoundedCornerShape(10.dp)),
                                 contentScale = ContentScale.Crop
                             )
+
                         }
 
 
@@ -437,38 +434,37 @@ fun BottomSheetMarking(
                             Column {
                                 if (selectedSawah!= null) {
                                     Text(
-                                        text = "Lokasi: ${selectedSawah.lokasi}",
+                                        text = "Lokasi: ${selectedSawah?.lokasi}",
                                         color = Color.White
                                     )
                                 }
                                 if (selectedSawah != null) {
                                     Text(
-                                        text = "Luas: ${selectedSawah.luas} ha",
+                                        text = "Luas: ${selectedSawah?.luas} ha",
                                         color = Color.White
                                     )
                                 }
                                 if (selectedSawah != null) {
                                     Text(
-                                        text = "Jenis Tanah: ${selectedSawah.jenis_tanah}",
+                                        text = "Jenis Tanah: ${selectedSawah?.jenis_tanah}",
                                         color = Color.White
                                     )
                                 }
                                 if (selectedSawah != null) {
                                     Text(
-                                        text = "Hasil Panen: ${selectedSawah.hasil_panen}",
+                                        text = "Hasil Panen: ${selectedSawah?.hasil_panen}",
                                         color = Color.White
                                     )
                                 }
-                                if (selectedSawah != null) {
-                                    Text(
-                                        text = "Deskripsi: ${selectedSawah.deskripsi}",
-                                        color = Color.White
-                                    )
-                                }
+//                                if (selectedSawah != null) {
+//                                    Text(
+//                                        text = "Deskripsi: ${selectedSawah?.deskripsi}",
+//                                        color = Color.White
+//                                    )
+//                                }
                             }
 
                         }
-
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Description Box
@@ -484,10 +480,9 @@ fun BottomSheetMarking(
                                     text = "Deskripsi",
                                     color = Color.White
                                 )
-                                if (selectedSawah != null) {
-                                    Text(
-                                        text = "Description: ${selectedSawah.deskripsi}",
-                                        color = Color.White
+                                Text(
+                                    text = "${selectedSawah?.deskripsi}",
+                                    color = Color.White
                                     )
                                 }
                             }
@@ -498,7 +493,7 @@ fun BottomSheetMarking(
             }
         }
     }
-}
+
 
 
 

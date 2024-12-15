@@ -11,7 +11,7 @@
 
 
     <application
-        android:name=".AgrySynergiApplication"
+        android:name=".AgrisynergyApplication"
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config"
@@ -36,7 +36,7 @@
         </activity>
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyBao5aaWCaCB8mF6GS9kEjyv7MfsoiDq10" />
+            android:value="AIzaSyBMv4uLFCw4dP2l2q3lg6oRZC0LPCQ20xk" />
 
         <activity
             android:name=".User.UserProfileActivity"
