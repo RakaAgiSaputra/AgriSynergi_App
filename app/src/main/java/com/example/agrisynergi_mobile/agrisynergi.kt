@@ -42,7 +42,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.User.UserProfileScreen
-import com.example.agrisynergi_mobile.auth.AuthWithGoogle
+import com.example.agrisynergi_mobile.auth.AuthManageer
 import com.example.agrisynergi_mobile.consultant.ChatScreen
 import com.example.agrisynergi_mobile.database.SawahViewModel
 import com.example.agrisynergi_mobile.navigation.NavigationItem
@@ -67,6 +67,7 @@ import com.example.agrisynergi_mobile.retrofit.model.view.LoginScreen
 import com.example.agrisynergi_mobile.retrofit.model.view.RegisterScreen
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.LoginViewModel
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.SharedPreferenceManager
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
 import com.example.agrisynergymobile.pages.ForumScreen
 import com.google.firebase.auth.FirebaseAuth
@@ -81,14 +82,19 @@ fun AgrisynergiApp(
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
     val registerViewModel = RegisterViewModel()
-    val loginVewModel = LoginViewModel()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val credentialManager = CredentialManager.create(context)
+    val sharedPreferenceManager = SharedPreferenceManager(context)
+    val loginVewModel = LoginViewModel(sharedPreferenceManager)
+    val authManager = AuthManageer(context, auth, navController,sharedPreferenceManager)
+    val isLoggedIn = sharedPreferenceManager.getLoginStatus()
 
-    val startDestination = if (auth.currentUser == null ||
-        loginVewModel.loginResult.value == "" )  Screen.Splash.route else
-        Screen.Beranda.route
+    val startDestination = if (isLoggedIn) {
+        Screen.Beranda.route  // Arahkan ke Beranda jika sudah login
+    } else {
+        Screen.Splash.route  // Arahkan ke Splash jika belum login
+    }
 
     Scaffold(
         topBar = {
@@ -134,14 +140,14 @@ fun AgrisynergiApp(
                     navController = navController,
                     registerViewModel = registerViewModel,
                     registerWithGoogle = {
-                        AuthWithGoogle(
-                            scope = scope,
-                            context = context,
-                            credentialManager = credentialManager,
-                            auth = auth,
-                            navController = navController,
-                            isUserAgri = false
-                        )
+//                        AuthWithGoogle(
+//                            scope = scope,
+//                            context = context,
+//                            credentialManager = credentialManager,
+//                            auth = auth,
+//                            navController = navController,
+//                            isUserAgri = false
+//                        )
                     }
                 )
             }
@@ -150,16 +156,19 @@ fun AgrisynergiApp(
                     navController = navController,
                     viewModel = loginVewModel,
                     context = context,
-                    loginWithGoogle = {
-                        AuthWithGoogle(
-                            scope = scope,
-                            context = context,
-                            credentialManager = credentialManager,
-                            auth = auth,
-                            navController = navController,
-                            isUserAgri = true
-                        )
-                    }
+                    coroutineScope = scope,
+                    authManageer = authManager,
+                    credentialManager = credentialManager,
+//                    loginWithGoogle = {
+//                        AuthWithGoogle(
+//                            scope = scope,
+//                            context = context,
+//                            credentialManager = credentialManager,
+//                            auth = auth,
+//                            navController = navController,
+//                            isUserAgri = true
+//                        )
+//                    }
                 )
             }
 
@@ -195,15 +204,7 @@ fun AgrisynergiApp(
                     onOptionSelected = { /* Handle navigasi berdasarkan opsi */ },
                     onBackClicked = { navController.popBackStack() },
                     onClickLogout = {
-                        loginVewModel.setLoginResult("")
-                            auth.signOut()
-                            scope.launch {
-                                credentialManager.clearCredentialState(
-                                    ClearCredentialStateRequest()
-                                )
-                            }
-
-                        navController.popBackStack()
+                        logOut(auth, sharedPreferenceManager, navController)
                     }
                 )
             }
@@ -235,10 +236,15 @@ fun AgrisynergiApp(
 
         }
     }
-
 }
 
-
+private fun logOut(auth: FirebaseAuth, sharedPreferenceManager: SharedPreferenceManager, navController: NavHostController) {
+    auth.signOut()
+    sharedPreferenceManager.logout()
+    navController.navigate(Screen.Splash.route) {
+        popUpTo(Screen.Beranda.route) { inclusive = true }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
