@@ -33,7 +33,7 @@ fun UserListScreen(userViewModel: RegisterViewModel) {
 
 @Composable
 fun UserItem(user: User) {
-    Text(text = "Name: ${user.username}, Email: ${user.email}")
+    Text(text = "Name: ${user.nama}, Email: ${user.email}")
 }
 
 

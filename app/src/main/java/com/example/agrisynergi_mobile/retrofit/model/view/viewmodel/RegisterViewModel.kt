@@ -24,8 +24,8 @@ class RegisterViewModel : ViewModel() {
     val registerResult: State<String> get() = _registerResult
 
     // Fungsi untuk mendaftar pengguna
-    fun registerUser(username: String, email: String, password: String, address: String, phoneNumber: String) {
-        val userRequest = UserRequest(username, email, password, address, phoneNumber)
+    fun registerUser(nama: String, email: String, katasandi: String, alamat: String, no_hp: String) {
+        val userRequest = UserRequest(nama, email, katasandi, alamat, no_hp)
 
         viewModelScope.launch {
             try {

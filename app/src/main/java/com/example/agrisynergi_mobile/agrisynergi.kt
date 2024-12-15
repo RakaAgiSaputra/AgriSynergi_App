@@ -238,7 +238,7 @@ fun AgrisynergiApp(
 
 private fun logOut(auth: FirebaseAuth, sharedPreferenceManager: SharedPreferenceManager, navController: NavHostController) {
     auth.signOut()
-    sharedPreferenceManager.logout()
+//    sharedPreferenceManager.logout()
     navController.navigate(Screen.Splash.route) {
         popUpTo(Screen.Beranda.route) { inclusive = true }
     }

@@ -2,35 +2,46 @@ package com.example.agrisynergi_mobile.retrofit.model.view.viewmodel
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import com.example.agrisynergi_mobile.auth.AuthManageer
-import com.example.agrisynergi_mobile.navigation.Screen
-import com.google.firebase.auth.FirebaseAuth
+import com.example.agrisynergi_mobile.retrofit.model.LoginRequest
+import com.example.agrisynergi_mobile.retrofit.network.RetrofitInstance.apiService
 
-class SharedPreferenceManager(
-    private val context: Context
-) {
+class SharedPreferenceManager(context: Context) {
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
 
-    private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+    fun saveToken(token: String) {
+        prefs.edit().putString("user_token", token).apply()
+    }
 
-    // Fungsi untuk menyimpan status login di SharedPreferences
+    fun getToken(): String? {
+        return prefs.getString("user_token", null)
+    }
+
     fun saveLoginStatus(isLoggedIn: Boolean) {
-        val editor = sharedPreferences.edit()
-        editor.putBoolean("isLoggedIn", isLoggedIn)
-        editor.apply()  // Apply for async saving
+        prefs.edit().putBoolean("is_logged_in", isLoggedIn).apply()
     }
 
-    // Fungsi untuk mengambil status login dari SharedPreferences
     fun getLoginStatus(): Boolean {
-        return sharedPreferences.getBoolean("isLoggedIn", false)
+        return prefs.getBoolean("is_logged_in", false)
     }
 
-    // Fungsi untuk logout dan menghapus status login dari SharedPreferences
-    fun logout() {
-        val editor = sharedPreferences.edit()
-        editor.remove("isLoggedIn")
-        editor.apply()
+    fun clearPreferences() {
+        prefs.edit().clear().apply()
     }
+
+
+    // Simpan data pengguna
+    fun saveUserData(nama: String, email: String, provinsi: String) {
+        prefs.edit()
+            .putString("user_nama", nama)
+            .putString("user_email", email)
+            .putString("user_provinsi", provinsi)
+            .apply()
+    }
+
+    // Ambil data pengguna
+    fun getUserNama(): String? = prefs.getString("user_nama", "")
+    fun getUserEmail(): String? = prefs.getString("user_email", "")
+    fun getUserProvinsi(): String? = prefs.getString("user_provinsi", "")
+
 }
