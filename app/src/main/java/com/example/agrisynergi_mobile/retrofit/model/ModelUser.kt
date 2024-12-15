@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 data class LoginRequest(val email: String, val katasandi: String)
-data class LoginResponse(val message: String, val token: String)
+data class LoginResponse(val message: String, val token: String, val success: Boolean)
 
 @Parcelize
 data class User(
@@ -17,7 +17,7 @@ data class User(
 data class UserRequest(
     val username: String,
     val email: String,
-    val password: String,
+    val katasandi: String,
     val address: String,
     val phone_number: String,
 ):Parcelable
@@ -27,7 +27,7 @@ data class UserResponse(
     val id: Int,
     val username: String,
     val email: String,
-    val password: String,
+    val katasandi: String,
     val message: String // Misalnya ada pesan status dari server
 ):Parcelable
 

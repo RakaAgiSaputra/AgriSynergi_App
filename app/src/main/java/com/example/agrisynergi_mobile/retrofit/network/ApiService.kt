@@ -14,9 +14,11 @@ interface ApiService {
     @GET("auth/users")
     suspend fun getUsers(): List<User>
 
+//    @POST("register")
     @POST("auth/register")
     suspend fun registerUser(@Body userRequest: UserRequest): Response<UserResponse>
 
+//    @POST("login")
     @POST("auth/login")
     suspend fun login(@Body loginRequest: LoginRequest): LoginResponse
 

@@ -44,18 +44,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.CredentialManager
 import androidx.navigation.NavController
 import com.example.agrisynergi_mobile.R
+import com.example.agrisynergi_mobile.auth.AuthManageer
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.LoginViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
 
 
-@Composable
-fun LoginScreen(navController: NavController,viewModel: LoginViewModel, context: Context,loginWithGoogle: () -> Unit){
+    @Composable
+fun LoginScreen(coroutineScope: CoroutineScope,
+                navController: NavController,
+                viewModel: LoginViewModel,
+                credentialManager: CredentialManager,
+                context: Context,
+                authManageer: AuthManageer){
+    val isLoading by remember { viewModel.isLoading }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    var isLoading by remember { mutableStateOf(false) }
+        //    var isLoading by remember { mutableStateOf(false) }
 
 
     LaunchedEffect(viewModel.loginResult.value) {
@@ -71,7 +81,7 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel, context:
     Column {
         Box(modifier = Modifier.background(Color.White)){
             Column (modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center){
-                Text("Welcome bro, here you must login before start your activity", fontSize = 20.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
+                Text("Welcome! Please login to start.", fontSize = 20.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(20.dp))
                 val image = painterResource(R.drawable.agri_synergy_3)
                 Image(
@@ -85,7 +95,7 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel, context:
                 Text("Username", fontWeight = FontWeight.Medium)
                 androidx.compose.material.OutlinedTextField(value = username, onValueChange = {
                     username = it
-                    isLoading = false
+//                    viewModel.setLoadingState(false)
                 },
                     modifier = Modifier.fillMaxWidth(), singleLine = true,
                     colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
@@ -98,7 +108,7 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel, context:
                     value = password,
                     onValueChange = {
                         password = it
-                        isLoading = false
+//                        viewModel.setLoadingState(false)
                     },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
@@ -125,9 +135,8 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel, context:
                 Button(onClick = {
 //                     Validasi input sebelum login
                     if (username.isNotBlank() && password.isNotBlank()) {
-                        isLoading = true
+//                        viewModel.setLoadingState(true)
                         viewModel.login(username, password)
-
                     } else {
                         Toast.makeText(context, "Please enter username and password", Toast.LENGTH_SHORT).show()
                     }
@@ -174,7 +183,12 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel, context:
 
 
                 Row(modifier = Modifier.fillMaxWidth().padding(8.dp).clickable {
-                    loginWithGoogle()
+                    val scope = CoroutineScope(Dispatchers.Main)
+                    authManageer.loginWithGoogle(
+                        scope = scope,
+                        isUserAgri = true, credentialManager = credentialManager)
+
+//                    loginWithGoogle()
                 }, horizontalArrangement = Arrangement.SpaceEvenly) {
                     Box(modifier = Modifier.background(Color.White, shape = RoundedCornerShape(16.dp)).padding(6.dp)){
                         Image(
