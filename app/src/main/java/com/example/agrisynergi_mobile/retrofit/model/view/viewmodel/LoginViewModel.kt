@@ -1,16 +1,11 @@
 package com.example.agrisynergi_mobile.retrofit.model.view.viewmodel
 
-import android.content.Context
-import android.content.SharedPreferences
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.agrisynergi_mobile.auth.AuthManageer
 import com.example.agrisynergi_mobile.retrofit.model.LoginRequest
 import com.example.agrisynergi_mobile.retrofit.network.RetrofitInstance
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
@@ -39,7 +34,7 @@ class LoginViewModel(private val sharedPreferenceManager: SharedPreferenceManage
                 val response = RetrofitInstance.apiService.login(request)
 
                 // Pastikan API merespons dengan status yang benar
-                if (response.isSuccessful) {
+                if (response.success) {
                     _loginResult.value = "Login successful"
                     setLoadingState(false)
                     sharedPreferenceManager.saveLoginStatus(true)

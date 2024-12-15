@@ -19,11 +19,11 @@ interface ApiService {
     suspend fun getProduk(): Response<ProdukResponse>
 
 //    @POST("auth/register")
-    @POST("register")
+    @POST("auth/register")
     suspend fun registerUser(@Body userRequest: UserRequest): Response<UserResponse>
 
-//    @POST("auth/login")
-    @POST("login")
+//    @POST("login")
+    @POST("auth/login")
     suspend fun login(@Body loginRequest: LoginRequest): LoginResponse
 
 }
