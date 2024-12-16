@@ -50,10 +50,14 @@ class RegisterViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) { RetrofitInstance.apiService.getUsers() }
-                _users.clear()
-                _users.addAll(response)
+                if (response.success) {
+                    _users.clear()
+                    _users.addAll(response.data)
+                } else {
+                    println("Error: ${response.message}")
+                }
             } catch (e: Exception) {
-                // Handle error
+                println("Error fetching users: ${e.message}")
             }
         }
     }

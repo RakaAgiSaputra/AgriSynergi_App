@@ -14,6 +14,7 @@ sealed class Screen(val route: String) {
     object Konsultasi : Screen("konsultasi")
     object User : Screen("user")
     object Forum : Screen("forum")
+    object AddPost : Screen("addpost")
     object DetailMarket : Screen("detailmarket/{marketId}")
     object Keranjang : Screen("keranjang/{marketId}") {
         fun createRoute(marketId: Int) = "keranjang/$marketId"

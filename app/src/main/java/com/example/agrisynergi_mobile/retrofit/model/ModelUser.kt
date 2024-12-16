@@ -20,10 +20,13 @@ data class RegisterRequest(
     val no_hp: String
 )
 
+// Response untuk User List
 data class UserResponse(
     val success: Boolean,
+    val code: Int,
     val message: String,
-    val userId: Int?
+    val userId: Int?,
+    val data: List<User>
 )
 
 data class LoginRequest(
@@ -43,20 +46,37 @@ data class UserData(
     val user: User
 )
 
-@Parcelize
+// Model untuk response API
+data class ApiResponse(
+    val success: Boolean,
+    val code: Int,
+    val message: String,
+    val data: List<User>, // Menyimpan array data users
+    val pagination: Pagination?,
+    val timestamp: String,
+    val errors: Any?
+)
+
+// Model Pagination (opsional)
+data class Pagination(
+    val total: Int,
+    val per_page: Int,
+    val current_page: Int,
+    val total_pages: Int
+)
 data class User(
     val id_user: Int,
     val nama: String,
     val no_hp: String,
     val alamat: String,
     val email: String,
+    val katasandi: String,
     val role: String,
     val foto: String,
     val provinsi: String,
     val kota: String,
     val kodepos: String,
-    val katasandi: String,
-) : Parcelable
+)
 
 
 //Login Request

@@ -98,6 +98,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.googleid)
     implementation(libs.play.services.auth.base)
+    implementation(libs.androidx.runtime.livedata)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

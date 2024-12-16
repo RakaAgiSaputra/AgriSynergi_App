@@ -407,8 +407,8 @@ fun BottomSheetMarking(
                         if (selectedSawah != null) {
                             Image(
                                 painter = rememberAsyncImagePainter(
-                                    model = "http://36.74.31.200:8080/images/${selectedSawah?.foto_lokasi}",
-                                    error = painterResource(id = R.drawable.imagenotavail) // Optional: Set placeholder image if error
+                                    model = "http://36.74.31.200:8080/api/fileSawah/${selectedSawah?.foto_lokasi}",
+                                    error = painterResource(id = R.drawable.imagenotavail)
                                 ),
                                 contentDescription = null,
                                 modifier = Modifier

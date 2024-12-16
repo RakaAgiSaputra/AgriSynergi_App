@@ -2,6 +2,7 @@ package com.example.agrisynergi_mobile
 
 import com.example.agrisynergi_mobile.retrofit.network.ApiService
 import com.example.agrisynergi_mobile.retrofit.network.RetrofitInstance
+import com.example.agrisynergi_mobile.database.ModelKomunitas.CommunityRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,6 +23,12 @@ object AppModule {
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit {
-        return RetrofitInstance.retrofit
+        return RetrofitInstance.retrofit  // Ensure RetrofitInstance is properly configured
+    }
+
+    @Provides
+    @Singleton
+    fun provideForumRepository(apiService: ApiService): CommunityRepository {
+        return CommunityRepository(apiService)  // Make sure ForumRepository exists in the correct package
     }
 }
