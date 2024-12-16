@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,6 +44,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCompositionContext
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,14 +65,48 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.data.datamarket
+import com.example.agrisynergi_mobile.database.testDatabase.Api
+import com.example.agrisynergi_mobile.database.testDatabase.Keranjang
+import com.example.agrisynergi_mobile.database.testDatabase.RetrofitClient1
+import com.example.agrisynergi_mobile.database.testDatabase.User
 import com.example.agrisynergi_mobile.navigation.Screen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
 
 @SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 
 
-fun KeranjangScreen(marketId: Int, navController: NavController){
+fun KeranjangScreen(marketId: Int, navController: NavController, api: Api){
+    val retrofit = RetrofitClient1().instance
+    val keranjangData = remember { mutableStateOf<List<Keranjang>>(emptyList()) }
+    val errorMessage = remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    api.getKeranjang().execute()
+                }
+                if (response.isSuccessful) {
+                    response.body()?.let { body ->
+                        keranjangData.value = body.data
+                    } ?: run {
+                        errorMessage.value = "Response body is null"
+                    }
+                } else {
+                    errorMessage.value = "Error: ${response.code()} - ${response.message()}"
+                }
+            } catch (e: Exception) {
+                errorMessage.value = "Gagal memuat data: ${e.localizedMessage}"
+            }
+        }
+    }
+
     Scaffold (
         topBar = {
             Row(horizontalArrangement = Arrangement.SpaceBetween,
@@ -107,6 +143,7 @@ fun KeranjangScreen(marketId: Int, navController: NavController){
             }
 
         },
+
         bottomBar = {
             Column(modifier = Modifier
                 .background(colorResource(R.color.white))
@@ -139,7 +176,7 @@ fun KeranjangScreen(marketId: Int, navController: NavController){
                         .fillMaxWidth()
                         .padding(top = 12.dp, bottom = 12.dp)
                 ) {
-                    val totalHarga = 150000f
+                    val totalHarga = keranjangData.value.sumOf { it.total_harga.toInt() }
                     Text(text = "Total harga  Rp ${String.format("%,.0f", totalHarga)}", fontWeight = FontWeight.Bold)
                     Button(onClick = {
                         navController.navigate(Screen.BeliSekarang.createRoute(marketId))
@@ -154,204 +191,296 @@ fun KeranjangScreen(marketId: Int, navController: NavController){
             }
         }
     ){
-            paddingValues -> ListBelanja(marketId,Modifier.padding( paddingValues))
+            paddingValues -> ListBelanja(Modifier.padding(paddingValues), api = retrofit, keranjang = keranjangData.value)
     }
 
 }
 
 @Composable
-fun ListBelanja(marketId: Int, modifier: Modifier){
+fun ListBelanja(modifier: Modifier, api: Api, keranjang: List<Keranjang>){
     LazyColumn(modifier = modifier) {
-        items(1){
-            ItemListBelanja(marketId)
+        items(keranjang){
+            ItemListBelanja(api)
         }
     }
 }
 
 @SuppressLint("DefaultLocale")
 @Composable
-fun ItemListBelanja(marketId: Int){
+fun ItemListBelanja(api: Api){
     var isCheckedStore by remember { mutableStateOf(false) }
     var isCheckedStoreItem by remember { mutableStateOf(false) }
     var counter by remember { mutableStateOf(0) }
-    val market = datamarket.markets.find { it.id == marketId }
 
+    val retrofit = RetrofitClient1().instance
+    val keranjangData = remember { mutableStateOf<List<Keranjang>>(emptyList()) }
+    val errorMessage = remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
 
-
-    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
-        Row (verticalAlignment = Alignment.CenterVertically){
-            Checkbox(checked = isCheckedStore, onCheckedChange = {
-                isCheckedStore = it
-                isCheckedStoreItem = it }, colors = CheckboxDefaults.colors(
-                checkedColor = colorResource(R.color.black),
-                uncheckedColor = colorResource(R.color.abu),
-                checkmarkColor = colorResource(R.color.white)
-
-            ))
-            Text(text="Star", color = colorResource(R.color.white),
-                modifier = Modifier
-                    .background(color = colorResource(R.color.hijau_terang))
-                    .padding(start = 8.dp, end = 8.dp))
-            Text(text= "Surya Bangunan", fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 8.dp))
-        }
-
-
-        Row (verticalAlignment = Alignment.CenterVertically){
-            Checkbox(checked = isCheckedStoreItem, onCheckedChange = {isCheckedStoreItem = it}, colors = CheckboxDefaults.colors(
-                checkedColor = colorResource(R.color.black),
-                uncheckedColor = colorResource(R.color.abu),
-                checkmarkColor = colorResource(R.color.white)
-
-            ))
-            Image(
-                painter = rememberAsyncImagePainter(market?.imageUrl),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(100.dp).clip(shape = RoundedCornerShape(corner = CornerSize(10.dp)))
-            )
-
-            Spacer(Modifier.width(10.dp))
-
-            Column {
-                Text(text = market!!.title)
-                Box(modifier = Modifier.padding(end = 8.dp)){
-                    Row (modifier = Modifier
-                        .background(colorResource(R.color.hijau_pudar))
-                        .height(25.dp),
-                        verticalAlignment = Alignment.CenterVertically){
-                        Text(text = "Variasi: warna Merah", fontSize = 12.sp, color = colorResource(R.color.white))
-                        IconButton(onClick = {}) {
-                            Icon(painter = painterResource(R.drawable.ic_downdown_r),
-                                contentDescription = null,
-                                tint = colorResource(R.color.white)
-                            )
-                        }
-                    }
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    api.getKeranjang().execute()
                 }
-                val hargaItems = 200000f
+                if (response.isSuccessful) {
+                    response.body()?.let { body ->
+                        keranjangData.value = body.data
+                    } ?: run {
+                        errorMessage.value = "Response body is null"
+                    }
+                } else {
+                    errorMessage.value = "Error: ${response.code()} - ${response.message()}"
+                }
+            } catch (e: Exception) {
+                errorMessage.value = "Gagal memuat data: ${e.localizedMessage}"
+            }
+        }
+    }
+
+    if (keranjangData.value.isNotEmpty()) {
+
+    LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+        items(keranjangData.value) { keranjang ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = isCheckedStore, onCheckedChange = {
+                        isCheckedStore = it
+                        isCheckedStoreItem = it
+                    }, colors = CheckboxDefaults.colors(
+                        checkedColor = colorResource(R.color.black),
+                        uncheckedColor = colorResource(R.color.abu),
+                        checkmarkColor = colorResource(R.color.white)
+
+                    )
+                )
                 Text(
-                    text = buildAnnotatedString {
-                        withStyle(style = SpanStyle(
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = Color.Gray,
-                            textDecoration = TextDecoration.LineThrough)
-                        ){
-                            append("Rp ${String.format("%,.0f", hargaItems)}")
-                        }
+                    text = "Star", color = colorResource(R.color.white),
+                    modifier = Modifier
+                        .background(color = colorResource(R.color.hijau_terang))
+                        .padding(start = 8.dp, end = 8.dp)
+                )
+                Text(
+                    text = "Jaya Tani",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
 
-                        withStyle(style = SpanStyle(
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = colorResource(R.color.hijau_terang),
-                        )){
-                            val afterDiscount = (hargaItems * 0.25)
-                            append(" ${String.format("%,.0f", hargaItems - afterDiscount)}")
-                        }
-                    },
-                    modifier = Modifier.padding(top = 8.dp, end = 8.dp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = isCheckedStoreItem,
+                    onCheckedChange = { isCheckedStoreItem = it },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = colorResource(R.color.black),
+                        uncheckedColor = colorResource(R.color.abu),
+                        checkmarkColor = colorResource(R.color.white)
+
+                    )
+                )
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        model = "http://36.74.31.200:8080/api/keranjang/${keranjang.foto_produk}",
+                        error = painterResource(id = R.drawable.imagenotavail)
+                    ),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(100.dp)
+                        .clip(shape = RoundedCornerShape(corner = CornerSize(10.dp)))
                 )
 
-                Row (modifier = Modifier.fillMaxWidth()){
-                    Box(modifier = Modifier
-                        .padding(end = 8.dp)
-                        .background(colorResource(R.color.hijau_pudar))
-                        .size(26.dp)){
-                        IconButton(
-                            onClick = {
-                                if (counter > 0) counter++
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_remove_icon_r),
-                                contentDescription = null,
-                                modifier = Modifier.size(25.dp)
-                            )
-                        }
-                    }
-                    Box (modifier = Modifier
-                        .padding(end = 8.dp)
-                        .width(36.dp)
-                        .height(27.dp)
-                        .border(
-                            shape = RoundedCornerShape(
-                                CornerSize(8.dp)
-                            ), width = 2.dp, color = Color.Gray
-                        )
-                        .padding(3.dp)){
-                        Text(text = counter.toString(), fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                    }
+                Spacer(Modifier.width(10.dp))
 
-                    Box(modifier = Modifier
-                        .padding(end = 8.dp)
-                        .background(colorResource(R.color.hijau_pudar))
-                        .size(26.dp)){
-                        IconButton(
-                            onClick = {
-                                counter++
-                            }
+                Column {
+                    Text(text = keranjang.nama_produk)
+                    Box(modifier = Modifier.padding(end = 8.dp)) {
+                        Row(
+                            modifier = Modifier
+                                .background(colorResource(R.color.hijau_pudar))
+                                .height(25.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = null
+                            Text(
+                                text = "Variasi: warna Merah",
+                                fontSize = 12.sp,
+                                color = colorResource(R.color.white)
                             )
+                            IconButton(onClick = {}) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_downdown_r),
+                                    contentDescription = null,
+                                    tint = colorResource(R.color.white)
+                                )
+                            }
                         }
                     }
+                    val hargaItems = keranjang.total_harga.toInt()
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(
+                                style = SpanStyle(
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = Color.Gray,
+                                    textDecoration = TextDecoration.LineThrough
+                                )
+                            ) {
+                                append("Rp ${String.format("%,.0f", hargaItems)}")
+                            }
+
+                            withStyle(
+                                style = SpanStyle(
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = colorResource(R.color.hijau_terang),
+                                )
+                            ) {
+                                val afterDiscount = (hargaItems * 0.25)
+                                append(" ${String.format("%,.0f", hargaItems - afterDiscount)}")
+                            }
+                        },
+                        modifier = Modifier.padding(top = 8.dp, end = 8.dp)
+                    )
+
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .background(colorResource(R.color.hijau_pudar))
+                                .size(26.dp)
+                        ) {
+                            IconButton(
+                                onClick = {
+//                                    if (keranjang.total_produk > 0) keranjang.total_produk++
+                                }
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_remove_icon_r),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(25.dp)
+                                )
+                            }
+                        }
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .width(36.dp)
+                                .height(27.dp)
+                                .border(
+                                    shape = RoundedCornerShape(
+                                        CornerSize(8.dp)
+                                    ), width = 2.dp, color = Color.Gray
+                                )
+                                .padding(3.dp)
+                        ) {
+                            Text(
+                                text = keranjang.total_produk.toString(),
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .background(colorResource(R.color.hijau_pudar))
+                                .size(26.dp)
+                        ) {
+                            IconButton(
+                                onClick = {
+//                                    keranjang.total_produk++
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(10.dp))
+
                 }
-                Spacer(Modifier.height(10.dp))
-
             }
-        }
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .background(color = colorResource(R.color.abu))
-            .height(1.dp))
-
-        Row (verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth()){
-            Image(
-                painter = painterResource(R.drawable.ic_baseline_discount_r),
-                contentDescription = null,
-                modifier = Modifier.size(35.dp).padding(10.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = colorResource(R.color.abu))
+                    .height(1.dp)
             )
 
-            Text(text="Tambah Rp56,1RB dapat diskon Rp1,5Rb", fontSize = 12.sp)
-
-            IconButton(onClick = {}) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_leftleft),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.ic_baseline_discount_r),
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(35.dp).padding(10.dp)
                 )
 
-            }
-        }
+                Text(text = "Tambah Rp56,1RB dapat diskon Rp1,5Rb", fontSize = 12.sp)
 
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .background(color = colorResource(R.color.abu))
-            .height(1.dp))
-        Row (verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth()){
-            Image(
-                painter = painterResource(R.drawable.img_gratis_ongkir),
-                contentDescription = null,
-                modifier = Modifier.size(50.dp).padding(10.dp)
+                IconButton(onClick = {}) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_leftleft),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = colorResource(R.color.abu))
+                    .height(1.dp)
             )
-
-            Text(text="Gratis ongkir s/d Rp10.000 dengan min. belanja Rp0 \nGratis Ongkir s/d Rp250.000 dengan min. ...", fontSize = 10.sp)
-
-            IconButton(onClick = {}) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_leftleft),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.img_gratis_ongkir),
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp).padding(end = 10.dp)
+                    modifier = Modifier.size(50.dp).padding(10.dp)
                 )
 
-            }
-        }
+                Text(
+                    text = "Gratis ongkir s/d Rp10.000 dengan min. belanja Rp0 \nGratis Ongkir s/d Rp250.000 dengan min. ...",
+                    fontSize = 10.sp
+                )
 
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .background(color = colorResource(R.color.abu))
-            .height(1.dp))
+                IconButton(onClick = {}) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_leftleft),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp).padding(end = 10.dp)
+                    )
+
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = colorResource(R.color.abu))
+                    .height(1.dp)
+            )
+        }
+    }
+    } else if (errorMessage.value.isNotEmpty()) {
+        androidx.compose.material.Text(
+            text = errorMessage.value,
+            color = Color.Red
+        )
+    } else {
+        androidx.compose.material.Text(
+            text = "Memuat...",
+            color = Color.Gray
+        )
     }
 }
