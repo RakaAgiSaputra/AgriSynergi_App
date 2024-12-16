@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, "AIzaSyBMv4uLFCw4dP2l2q3lg6oRZC0LPCQ20xk")
+            Places.initialize(applicationContext, "AIzaSyB6OwJSoPo3GOl9NPEtgIz-zFQmnJekWuU")
         }
 
 
