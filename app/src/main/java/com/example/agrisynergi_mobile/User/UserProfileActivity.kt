@@ -2,6 +2,7 @@ package com.example.agrisynergi_mobile.User
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -161,10 +162,10 @@ fun UserProfileHeader(onBackClicked: () -> Unit) {
 
 @Composable
 fun ProfileSection(sharedPreferenceManager: SharedPreferenceManager) {
-    val nama = sharedPreferenceManager.getUserNama() ?: "Guest"
-    val email = sharedPreferenceManager.getUserEmail() ?: "guest@example.com"
-    val provinsi = sharedPreferenceManager.getUserProvinsi() ?: "Unknown"
-
+    val nama = sharedPreferenceManager.getUserNama() ?: ""
+    val email = sharedPreferenceManager.getUserEmail() ?: ""
+    val provinsi = sharedPreferenceManager.getUserProvinsi() ?: ""
+    Log.d("ProfileData", "Nama: $nama, Email: $email, Provinsi: $provinsi")
     Row(
         modifier = Modifier
             .fillMaxWidth()
