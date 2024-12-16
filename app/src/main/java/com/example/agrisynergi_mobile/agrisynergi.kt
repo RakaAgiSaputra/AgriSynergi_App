@@ -1,7 +1,5 @@
 package com.example.agrisynergi_mobile
 
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -33,9 +31,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
-import androidx.credentials.GetCredentialRequest
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -79,15 +77,9 @@ import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.MarketViewMo
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.SharedPreferenceManager
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
+import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahViewModel
 import com.example.agrisynergymobile.pages.ForumScreen
-import com.google.android.gms.auth.GoogleAuthException
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import kotlinx.coroutines.launch
-import java.io.IOException
-import kotlin.math.log
 
 @Composable
 fun AgrisynergiApp(
@@ -193,7 +185,8 @@ fun AgrisynergiApp(
                 MainScreen(navHostController = navController, contentPadding = contentPadding)
             }
             composable(Screen.Maps.route) {
-                MapsScreen(navController = navController)
+                val sawahViewModel: SawahViewModel = hiltViewModel()
+                MapsScreen(viewModel = sawahViewModel, navController = navController)
             }
             composable(Screen.Agenda.route) {
                 AgendaScreen(navController = navController)
@@ -229,7 +222,7 @@ fun AgrisynergiApp(
             }
            composable("user_profile") {
                 UserProfileScreen(
-                    onOptionSelected = { /* Handle navigasi berdasarkan opsi */ },
+                    onOptionSelected = { },
                     onBackClicked = { navController.popBackStack() },
                     onClickLogout = {
                         logOut(auth, sharedPreferenceManager, navController)
@@ -277,7 +270,7 @@ fun AgrisynergiApp(
 
 private fun logOut(auth: FirebaseAuth, sharedPreferenceManager: SharedPreferenceManager, navController: NavHostController) {
     auth.signOut()
-    sharedPreferenceManager.logout()
+//    sharedPreferenceManager.logout()
     navController.navigate(Screen.Splash.route) {
         popUpTo(Screen.Beranda.route) { inclusive = true }
     }

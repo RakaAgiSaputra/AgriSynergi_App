@@ -2,6 +2,7 @@ package com.example.agrisynergi_mobile.User
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -39,6 +40,7 @@ import com.example.agrisynergi_mobile.User.DropshipperCatalog2Activity
 import com.example.agrisynergi_mobile.User.NewDropshipperActivity
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.navigation.Screen
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.SharedPreferenceManager
 
 
 class UserProfileActivity : ComponentActivity() {
@@ -111,6 +113,8 @@ class UserProfileActivity : ComponentActivity() {
 
 @Composable
 fun UserProfileScreen(onOptionSelected: (String) -> Unit, onBackClicked: () -> Unit, onClickLogout: () -> Unit) {
+    val context = LocalContext.current
+    val sharedPreferenceManager = SharedPreferenceManager(context)
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -122,7 +126,7 @@ fun UserProfileScreen(onOptionSelected: (String) -> Unit, onBackClicked: () -> U
                 .verticalScroll(rememberScrollState())
         ) {
             UserProfileHeader(onBackClicked = onBackClicked)
-            ProfileSection()
+            ProfileSection(sharedPreferenceManager)
             OptionsList(onOptionSelected,onClickLogout)
         }
     }
@@ -157,7 +161,11 @@ fun UserProfileHeader(onBackClicked: () -> Unit) {
 
 
 @Composable
-fun ProfileSection() {
+fun ProfileSection(sharedPreferenceManager: SharedPreferenceManager) {
+    val nama = sharedPreferenceManager.getUserNama() ?: ""
+    val email = sharedPreferenceManager.getUserEmail() ?: ""
+    val provinsi = sharedPreferenceManager.getUserProvinsi() ?: ""
+    Log.d("ProfileData", "Nama: $nama, Email: $email, Provinsi: $provinsi")
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -176,12 +184,14 @@ fun ProfileSection() {
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text("Asep Sarafuddin", fontSize = 16.sp, color = Color(0xFF333333), fontWeight = FontWeight.Medium)
-            Text("asep123@gmail.com", fontSize = 14.sp, color = Color(0xFF777777))
-            Text("Jakarta, Indonesia", fontSize = 14.sp, color = Color(0xFF777777))
+            Text(nama, fontSize = 16.sp, color = Color(0xFF333333), fontWeight = FontWeight.Medium)
+            Text(email, fontSize = 14.sp, color = Color(0xFF777777))
+            Text(provinsi, fontSize = 14.sp, color = Color(0xFF777777))
         }
     }
 }
+
+
 
 @Composable
 fun OptionsList(onOptionSelected: (String) -> Unit, onClickLogout:()-> Unit) {

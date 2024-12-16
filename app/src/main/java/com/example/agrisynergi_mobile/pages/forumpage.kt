@@ -32,30 +32,46 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.data.Forum
 import com.example.agrisynergi_mobile.data.dataforum
 import com.example.agrisynergi_mobile.navigation.Screen
+import com.example.agrisynergi_mobile.pages.MainScreen
 
 //Main Forum
 @Composable
 fun ForumScreen(navController: NavHostController) {
-    val context = LocalContext.current
-    Surface(color = MaterialTheme.colorScheme.background) {
+    val forums = dataforum.forums // Ambil data forum
+    Surface(
+        modifier = Modifier.fillMaxSize(), // Mengisi seluruh layar
+        color = MaterialTheme.colorScheme.background
+    ) {
         Column {
-            CustomTopBar(
+            // Custom Top Bar
+            TopBarForum(
                 navController = navController,
                 onBackClick = { navController.navigateUp() },
                 onSearchClick = { query ->
+
                 },
                 onAddClick = {
+                    navController.navigate("addPostScreen")
+                },
+                onSearchQueryChange = { query ->
+                    // Handle search query changes (optional)
                 }
             )
-            val forums = dataforum.forums
+
+            // List forum
             ForumList(forums = forums)
         }
     }
 }
+
+
+
 
 //Setting list forum
 @Composable
@@ -250,18 +266,15 @@ fun ForumItem(forum: Forum) {
 
 //Setting Top Bar
 @Composable
-fun CustomTopBar(
-    navController: NavHostController,
-    onBackClick: () -> Unit,
-    onSearchClick: (String) -> Unit,
-    onAddClick: () -> Unit
+fun TopBarForum(
+    navController: NavHostController, onBackClick: () -> Unit, onSearchClick: (String) -> Unit, onAddClick: () -> Unit,
+    onSearchQueryChange: (String) -> Unit
 ) {
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF13382C))
-                .padding(horizontal = 4.dp, vertical = 2.dp),
+                .background(Color(0xFF13382C)),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -283,78 +296,91 @@ fun CustomTopBar(
                 )
             }
         }
+    }
+    SearchBarForum(navController = navController, onSearchClick = onSearchClick)
+    TagLineForum()
+}
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF13382C))
-                .padding(horizontal = 16.dp, vertical = 0.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            var searchQuery by remember { mutableStateOf("") }
-            TextField(
-                value = searchQuery,
-                onValueChange = {
-                    searchQuery = it
-                    onSearchClick(it)
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(40.dp),
-                placeholder = { Text("Search") },
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color(0xFF5B8C51),
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                shape = RoundedCornerShape(8.dp),
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search Icon",
-                        tint = Color.White
+@Composable
+fun SearchBarForum(navController: NavHostController, onSearchClick: (String) -> Unit) {
+    var searchQuery by remember { mutableStateOf("") }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF13382C))
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = {
+                Text(
+                    text = "Search...",
+                    style = TextStyle(
+                        color = Color.Gray
                     )
-                },
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Tombol tambah
-            IconButton(onClick = {
-                onAddClick()
-                navController.navigate("addPostScreen")
-            }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.iconaddfor),
-                    contentDescription = "Add",
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(30.dp)
                 )
-            }
-        }
-
-        LazyRow(
+            },
+            singleLine = true,
             modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF13382C))
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp)
-        ) {
-            val categories = listOf("#Trending", "#Terbaru", "#Hamajagung", "#Musim", "#BibitJagung", "#Hama", "Panen")
-            items(categories) { category ->
-                Box(
-                    modifier = Modifier
-                        .background(Color.White, shape = RoundedCornerShape(8.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text(text = category, color = Color(0xFF5B8C51), fontSize = 10.sp)
-                }
+                .weight(1f)
+                .height(48.dp)
+                .background(Color.White, shape = RoundedCornerShape(12.dp)),
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = "Search"
+                )
+            },
+            shape = RoundedCornerShape(12.dp)
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Add button
+        IconButton(onClick = { navController.navigate("addPostScreen") }) {
+            Icon(
+                painter = painterResource(id = R.drawable.iconaddfor),
+                contentDescription = "Add",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(40.dp)
+            )
+        }
+    }
+}
+
+
+
+@Composable
+fun TagLineForum(){
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF13382C))
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp)
+    ) {
+        val categories = listOf("#Trending", "#Terbaru", "#Hamajagung", "#Musim", "#BibitJagung", "#Hama", "Panen")
+        items(categories) { category ->
+            Box(
+                modifier = Modifier
+                    .background(Color.White, shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(text = category, color = Color(0xFF5B8C51), fontSize = 10.sp)
             }
         }
     }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+fun MainScreenPreview() {
+    ForumScreen(navController = rememberNavController())
 }
 
 

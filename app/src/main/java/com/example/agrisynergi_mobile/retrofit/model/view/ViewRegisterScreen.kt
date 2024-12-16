@@ -30,7 +30,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.database.DatabaseRegister.UserResponse
-import com.example.agrisynergi_mobile.database.RetrofitClient
+import com.example.agrisynergi_mobile.database.RetrofitClient1
+//import com.example.agrisynergi_mobile.database.RetrofitClient1
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
 import com.google.gson.Gson
@@ -305,7 +306,7 @@ fun registerUser(
     onSuccess: () -> Unit,
     onError: (String) -> Unit
 ) {
-    val api = RetrofitClient.instance
+    val api = RetrofitClient1.instance
     //validasi apakah field kosong
     if (username.isEmpty() || email.isEmpty() || phoneNumber.isEmpty() || password.isEmpty() || address.isEmpty()) {
         onError("All fields must be filled")

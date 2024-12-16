@@ -10,7 +10,7 @@ class FarmerRepository(private val farmerDao: FarmerDao) {
         return farmerDao.getAllFarmers()
     }
 
-    suspend fun getFarmerById(id: Int): FarmerEntity {
+    suspend fun getFarmerById(id: Int): FarmerEntity? {
         return farmerDao.getFarmerById(id)
     }
 

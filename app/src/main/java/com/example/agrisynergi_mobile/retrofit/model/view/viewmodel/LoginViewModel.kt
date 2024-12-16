@@ -16,35 +16,32 @@ class LoginViewModel(private val sharedPreferenceManager: SharedPreferenceManage
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
-    fun setLoginResult(message: String) {
-        _loginResult.value = message
-    }
-
-    private fun setLoadingState(isLoading: Boolean) {
-        _isLoading.value = isLoading
-    }
-
-
-    // Fungsi login dengan Retrofit
-    fun login(username: String, password: String) {
+    fun login(email: String, password: String) {
         viewModelScope.launch {
             setLoadingState(true)
             try {
-                val request = LoginRequest(username, password)
+                val request = LoginRequest(email, password)
                 val response = RetrofitInstance.apiService.login(request)
 
-                // Pastikan API merespons dengan status yang benar
                 if (response.success) {
                     _loginResult.value = "Login successful"
-                    setLoadingState(false)
+
+                    val userData = response.data?.user
+                    sharedPreferenceManager.saveToken(response.data?.token ?: "")
                     sharedPreferenceManager.saveLoginStatus(true)
+                    sharedPreferenceManager.saveUserData(
+                        nama = response.data?.user?.nama ?: "",
+                        email = response.data?.user?.email ?: "",
+                        provinsi = response.data?.user?.provinsi ?: ""
+                    )
+
+                    setLoadingState(false)
                 } else {
-                    _loginResult.value = "Email or password is incorrect"
+                    _loginResult.value = response.message
                     setLoadingState(false)
                 }
             } catch (e: HttpException) {
-                _loginResult.value = "Login failed: Username atau password salahCek endpoint api ya... ${e.message}"
-//                _loginResult.value = "Username atau password salah"
+                _loginResult.value = "Login failed: ${e.message()}"
                 setLoadingState(false)
             } catch (e: Exception) {
                 _loginResult.value = "Login failed: ${e.message}"
@@ -52,4 +49,9 @@ class LoginViewModel(private val sharedPreferenceManager: SharedPreferenceManage
             }
         }
     }
+
+    private fun setLoadingState(isLoading: Boolean) {
+        _isLoading.value = isLoading
+    }
 }
+

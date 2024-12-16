@@ -62,8 +62,8 @@ fun LoginScreen(coroutineScope: CoroutineScope,
                 context: Context,
                 authManageer: AuthManageer){
     val isLoading by remember { viewModel.isLoading }
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+        var email by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
 
         //    var isLoading by remember { mutableStateOf(false) }
 
@@ -92,9 +92,9 @@ fun LoginScreen(coroutineScope: CoroutineScope,
                     modifier = Modifier.fillMaxWidth().size(200.dp).padding(8.dp)
                 )
 
-                Text("Username", fontWeight = FontWeight.Medium)
-                androidx.compose.material.OutlinedTextField(value = username, onValueChange = {
-                    username = it
+                Text("Email", fontWeight = FontWeight.Medium)
+                androidx.compose.material.OutlinedTextField(value = email, onValueChange = {
+                    email = it
 //                    viewModel.setLoadingState(false)
                 },
                     modifier = Modifier.fillMaxWidth(), singleLine = true,
@@ -134,11 +134,11 @@ fun LoginScreen(coroutineScope: CoroutineScope,
 
                 Button(onClick = {
 //                     Validasi input sebelum login
-                    if (username.isNotBlank() && password.isNotBlank()) {
+                    if (email.isNotBlank() && password.isNotBlank()) {
 //                        viewModel.setLoadingState(true)
-                        viewModel.login(username, password)
+                        viewModel.login(email, password)
                     } else {
-                        Toast.makeText(context, "Please enter username and password", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Please enter email and password", Toast.LENGTH_SHORT).show()
                     }
                 },
                     modifier = Modifier
