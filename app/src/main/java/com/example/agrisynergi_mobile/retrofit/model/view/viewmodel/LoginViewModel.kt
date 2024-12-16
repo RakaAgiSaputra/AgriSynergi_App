@@ -25,15 +25,16 @@ class LoginViewModel(private val sharedPreferenceManager: SharedPreferenceManage
 
                 if (response.success) {
                     _loginResult.value = "Login successful"
-                    // Simpan token dan user detail jika login berhasil
+
                     val userData = response.data?.user
                     sharedPreferenceManager.saveToken(response.data?.token ?: "")
                     sharedPreferenceManager.saveLoginStatus(true)
                     sharedPreferenceManager.saveUserData(
-                        nama = userData?.nama ?: "Pengguna",
-                        email = userData?.email ?: "user@gmail.com",
-                        provinsi = userData?.provinsi ?: "Jawa Timur"
+                        nama = response.data?.user?.nama ?: "",
+                        email = response.data?.user?.email ?: "",
+                        provinsi = response.data?.user?.provinsi ?: ""
                     )
+
                     setLoadingState(false)
                 } else {
                     _loginResult.value = response.message

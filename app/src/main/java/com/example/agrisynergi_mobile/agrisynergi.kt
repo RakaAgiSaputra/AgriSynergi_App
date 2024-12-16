@@ -199,7 +199,7 @@ fun AgrisynergiApp(
             }
            composable("user_profile") {
                 UserProfileScreen(
-                    onOptionSelected = { /* Handle navigasi berdasarkan opsi */ },
+                    onOptionSelected = { },
                     onBackClicked = { navController.popBackStack() },
                     onClickLogout = {
                         logOut(auth, sharedPreferenceManager, navController)

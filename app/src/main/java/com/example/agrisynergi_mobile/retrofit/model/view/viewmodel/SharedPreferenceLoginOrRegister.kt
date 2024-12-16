@@ -39,6 +39,7 @@ class SharedPreferenceManager(context: Context) {
             .apply()
     }
 
+
     // Ambil data pengguna
     fun getUserNama(): String? = prefs.getString("user_nama", "")
     fun getUserEmail(): String? = prefs.getString("user_email", "")
