@@ -3,33 +3,57 @@ package com.example.agrisynergi_mobile.retrofit.model
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
-data class LoginRequest(val email: String, val katasandi: String)
-data class LoginResponse(val message: String, val token: String, val success: Boolean)
+data class UserRequest(
+    val nama: String,
+    val password: String,
+    val alamat: String,
+    val katasandi: String,
+    val no_hp: String
+)
+data class RegisterRequest(
+    val nama: String,
+    val password: String,
+    val alamat: String,
+    val katasandi: String,
+    val no_hp: String
+)
+
+data class UserResponse(
+    val message: String,
+    val userId: Int
+)
+
+data class LoginRequest(
+    val email: String,
+    val katasandi: String
+)
+
+data class LoginResponse(
+    val success: Boolean,
+    val code: Int,
+    val message: String,
+    val data: UserData?
+)
+
+data class UserData(
+    val token: String,
+    val user: User
+)
 
 @Parcelize
 data class User(
-    val id: Int,
-    val username: String,
-    val email: String
-):Parcelable
-
-@Parcelize
-data class UserRequest(
-    val username: String,
+    val id_user: Int,
+    val nama: String,
+    val no_hp: String,
+    val alamat: String,
     val email: String,
-    val katasandi: String,
-    val address: String,
-    val phone_number: String,
-):Parcelable
+    val role: String,
+    val foto: String?,
+    val provinsi: String,
+    val kota: String,
+    val kodepos: String
+) : Parcelable
 
-@Parcelize
-data class UserResponse(
-    val id: Int,
-    val username: String,
-    val email: String,
-    val katasandi: String,
-    val message: String // Misalnya ada pesan status dari server
-):Parcelable
 
 //Login Request
 
