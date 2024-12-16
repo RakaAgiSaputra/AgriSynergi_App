@@ -6,7 +6,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.example.agrisynergi_mobile.database.RetrofitClient
+import com.example.agrisynergi_mobile.database.RetrofitClient1
 import com.example.agrisynergi_mobile.database.testDatabase.Api
 import com.example.agrisynergi_mobile.database.testDatabase.Produk
 import com.example.agrisynergi_mobile.retrofit.network.RetrofitInstance

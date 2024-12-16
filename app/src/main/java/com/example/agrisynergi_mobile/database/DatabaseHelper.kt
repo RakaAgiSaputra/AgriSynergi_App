@@ -4,7 +4,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import com.example.agrisynergi_mobile.viewmodel.DetailSawah
 import com.example.agrisynergi_mobile.viewmodel.DetailAgenda
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -83,21 +82,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         onCreate(db)
     }
 
-    fun insertData(detail: DetailSawah): Long {
-        val values = ContentValues().apply {
-            put(ID_SAWAH, detail.idSawah)
-            put(NAMA, detail.nama)
-            put(LUAS, detail.luas)
-            put(JENIS_TANAH, detail.jenisTanah)
-            put(HASIL_PANEN, detail.hasilPanen)
-            put(PRODUKSI, detail.produksi)
-            put(DESKRIPSI, detail.deskripsi)
-            put(LATITUDE, detail.latitude)
-            put(LONGITUDE, detail.longitude)
-        }
-        return writableDatabase.insert(TABLE_NAME, null, values)
-    }
-
     fun insertDataAgenda(detail: DetailAgenda): Long {
         val values = ContentValues().apply {
             put(IMAGE_PATH, detail.imagePath)
@@ -107,35 +91,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put(JENIS, detail.jenis)
         }
         return writableDatabase.insert(AGENDA_TABLE, null, values)
-    }
-
-    fun readData(): List<DetailSawah> {
-        val dataList = mutableListOf<DetailSawah>()
-        val cursor = readableDatabase.query(TABLE_NAME, null, null, null, null, null, null)
-
-        with(cursor) {
-            while (moveToNext()) {
-                val idLokasi = getInt(getColumnIndexOrThrow(ID_LOKASI))
-                val idSawah = getInt(getColumnIndexOrThrow(ID_SAWAH))
-                val nama = getString(getColumnIndexOrThrow(NAMA))
-                val luas = getDouble(getColumnIndexOrThrow(LUAS))
-                val jenisTanah = getString(getColumnIndexOrThrow(JENIS_TANAH))
-                val hasilPanen = getString(getColumnIndexOrThrow(HASIL_PANEN))
-                val produksi = getString(getColumnIndexOrThrow(PRODUKSI))
-                val deskripsi = getString(getColumnIndexOrThrow(DESKRIPSI))
-                val latitude = getDouble(getColumnIndexOrThrow(LATITUDE))
-                val longitude = getDouble(getColumnIndexOrThrow(LONGITUDE))
-
-                dataList.add(
-                    DetailSawah(
-                        idLokasi, idSawah, nama, luas, jenisTanah,
-                        hasilPanen, produksi, deskripsi, latitude, longitude
-                    )
-                )
-            }
-        }
-        cursor.close()
-        return dataList
     }
 
     fun readAgendaItems(): List<Agenda> {
@@ -165,24 +120,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         }
         cursor.close()
         return agendaList
-    }
-
-    fun updateData(detail: DetailSawah): Int {
-        val values = ContentValues().apply {
-            put(ID_SAWAH, detail.idSawah)
-            put(NAMA, detail.nama)
-            put(LUAS, detail.luas)
-            put(JENIS_TANAH, detail.jenisTanah)
-            put(HASIL_PANEN, detail.hasilPanen)
-            put(PRODUKSI, detail.produksi)
-            put(DESKRIPSI, detail.deskripsi)
-            put(LATITUDE, detail.latitude)
-            put(LONGITUDE, detail.longitude)
-        }
-
-        val selection = "$ID_LOKASI = ?"
-        val selectionArgs = arrayOf(detail.idLokasi.toString())
-        return writableDatabase.update(TABLE_NAME, values, selection, selectionArgs)
     }
 
     fun updateDataAgenda(detail: DetailAgenda): Int {
