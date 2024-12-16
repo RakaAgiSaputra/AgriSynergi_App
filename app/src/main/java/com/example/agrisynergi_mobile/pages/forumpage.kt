@@ -1,5 +1,6 @@
 package com.example.agrisynergymobile.pages
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -31,63 +31,118 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.focusModifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.agrisynergi_mobile.R
-import com.example.agrisynergi_mobile.data.Forum
-import com.example.agrisynergi_mobile.data.dataforum
+import com.example.agrisynergi_mobile.database.ModelKomunitas.CommunityData
+import com.example.agrisynergi_mobile.database.ModelKomunitas.ForumViewModel
 import com.example.agrisynergi_mobile.navigation.Screen
-import com.example.agrisynergi_mobile.pages.MainScreen
+import com.example.agrisynergi_mobile.database.ModelKomunitas.Result
+import com.example.agrisynergi_mobile.database.ModelKomunitas.UserViewModel
+import com.example.agrisynergi_mobile.retrofit.model.User
+import com.example.agrisynergi_mobile.retrofit.model.UserData
 
 //Main Forum
 @Composable
-fun ForumScreen(navController: NavHostController) {
-    val forums = dataforum.forums // Ambil data forum
+fun ForumScreen(
+    navController: NavHostController,
+    viewModel: ForumViewModel = hiltViewModel(),
+    userViewModel: UserViewModel = hiltViewModel()
+) {
+    val communityData by viewModel.communityData.collectAsState()
+    val users by viewModel.users.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchCommunityData()
+        viewModel.fetchUsers()
+    }
+
     Surface(
-        modifier = Modifier.fillMaxSize(), // Mengisi seluruh layar
+        modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            // Custom Top Bar
             TopBarForum(
-                navController = navController,
                 onBackClick = { navController.navigateUp() },
-                onSearchClick = { query ->
-
-                },
-                onAddClick = {
-                    navController.navigate("addPostScreen")
-                },
-                onSearchQueryChange = { query ->
-                    // Handle search query changes (optional)
-                }
+                onSearchClick = { query -> /* Handle search query */ },
+                navController = navController,
+                onAddClick = { navController.navigate(Screen.AddPost.route) }
             )
 
-            // List forum
-            ForumList(forums = forums)
+
+            when (val result = communityData) {
+                is Result.Loading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+                is Result.Success -> {
+                    val communityResponse = result.data
+                    val communityList = communityResponse?.data ?: emptyList()
+                    ForumList(communityData = communityList, users = users)
+                }
+
+                is Result.Error -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Error: ${result.message}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Red,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(onClick = { viewModel.fetchCommunityData() }) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 
-
-
 //Setting list forum
 @Composable
-fun ForumList(forums: List<Forum>) {
+fun ForumList(communityData: List<CommunityData>,  users: List<User>) {
     LazyColumn {
-        items(forums.size) { index ->
-            ForumItem(forum = forums[index])
+        items(communityData) { community ->
+            ForumItem(community = community, users = users)
         }
     }
 }
 
 //Setting Forum Box
 @Composable
-fun ForumItem(forum: Forum) {
+fun ForumItem(community: CommunityData, users: List<User>) {
     var isExpanded by remember { mutableStateOf(false) }
-    val word = forum.text.split(" ")
+    val text = community.deskripsi?.split(" ") ?: listOf("No description available")
+
+    val user = users.find { it.id_user == community.id_user }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -95,60 +150,53 @@ fun ForumItem(forum: Forum) {
             .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(1.dp)
-            ) {
-                Row (
-                    modifier = Modifier
-                        .padding(8.dp)
-                ){
-                    Image(
-                        painter = rememberImagePainter(
-                            data = forum.user.profilePic
-                        ),
-                        contentDescription = "Profile Pic",
-                        modifier = Modifier
-                            .size(55.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
+        Box(modifier = Modifier.fillMaxWidth().background(Color.White)) {
+            Column(modifier = Modifier.fillMaxWidth().shadow(1.dp)) {
+                Row(modifier = Modifier.padding(8.dp)) {
+                    if (user != null) {
+                        Image(
+                            painter = rememberAsyncImagePainter(
+                                model = user.foto?.let { "http://36.74.38.214:8080/api/fileUsers/$it" },
+                                error = painterResource(id = R.drawable.imagenotavail)
+                            ),
+                            contentDescription = "Profile Pic",
+                            modifier = Modifier
+                                .size(55.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
                     Spacer(modifier = Modifier.width(15.dp))
                     Column {
-                        Text(
-                            text = forum.user.name,
-                            style = TextStyle(
-                                color = Color.Black,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-
+                        user?.let {
+                            Text(
+                                text = it.nama,
+                                style = TextStyle(
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
                                 )
-                        )
-                        Text(
-                            text = forum.user.username,
-                            style = TextStyle(
-                                color = Color.Gray,
-                                fontSize = 14.sp
                             )
-                        )
+                            Text(
+                                text = it.role,
+                                style = TextStyle(
+                                    color = Color.Gray,
+                                    fontSize = 12.sp
+                                )
+                            )
+                        }
                         Text(
-                            text = forum.date,
+                            text = "21 Sep",
                             style = TextStyle(
                                 color = Color.Gray,
                                 fontSize = 12.sp
                             )
                         )
-
                         Spacer(modifier = Modifier.height(18.dp))
-                        if(isExpanded){
+                        if (isExpanded) {
                             Text(
-                                text = forum.text,
+                                text = community.deskripsi ?: "No description available",  // Safe check for null
                                 style = TextStyle(
                                     color = Color.Black,
                                     fontSize = 12.sp,
@@ -156,15 +204,14 @@ fun ForumItem(forum: Forum) {
                                 )
                             )
                             Text(
-                                text = "Baca lebih sedikit",
+                                text = "Read less",
                                 color = Color.Gray,
                                 fontSize = 12.sp,
-                                modifier = Modifier
-                                    .clickable { isExpanded = false }
+                                modifier = Modifier.clickable { isExpanded = false }
                             )
                         } else {
                             Text(
-                                text = word.take(30).joinToString(" ") + "...",
+                                text = text.take(30).joinToString(" ") + "...",
                                 style = TextStyle(
                                     color = Color.Black,
                                     fontSize = 12.sp,
@@ -172,34 +219,34 @@ fun ForumItem(forum: Forum) {
                                 )
                             )
                             Text(
-                                text = "Baca selengkapnya",
+                                text = "Read more",
                                 color = Color.Gray,
                                 fontSize = 12.sp,
-                                modifier = Modifier
-                                    .clickable { isExpanded = true }
+                                modifier = Modifier.clickable { isExpanded = true }
                             )
                         }
                         Spacer(modifier = Modifier.height(18.dp))
                     }
                 }
 
-                if (forum.hasImage) {
-                    forum.imageUrl?.let {
-                        Spacer(modifier = Modifier.height(3.dp))
-                        Image(
-                            painter = rememberImagePainter(
-                                data = it
-                            ),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(180.dp)
-                                .aspectRatio(16/9f),
-                            contentScale = ContentScale.Crop
-                        )
+                // Safe check for gambar (image)
+                val communityImageUrl = community.gambar?.takeIf { it.isNotEmpty() }?.let {
+                    "http://36.74.38.214:8080/api/fileKomunitas/$it"
+                } ?: "default_image_url_here"
 
-                    }
-                }
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        model = communityImageUrl,
+                        error = painterResource(id = R.drawable.imagenotavail)
+                    ),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .aspectRatio(16 / 9f),
+                    contentScale = ContentScale.Crop
+                )
+
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     horizontalArrangement = Arrangement.Start,
@@ -261,16 +308,21 @@ fun ForumItem(forum: Forum) {
             }
         }
     }
-
 }
+
+
+
 
 //Setting Top Bar
 @Composable
 fun TopBarForum(
-    navController: NavHostController, onBackClick: () -> Unit, onSearchClick: (String) -> Unit, onAddClick: () -> Unit,
-    onSearchQueryChange: (String) -> Unit
+    onBackClick: () -> Unit,
+    onSearchClick: (String) -> Unit,
+    onAddClick: () -> Unit,
+    navController: NavHostController
 ) {
     Column {
+        // Top Bar Row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -296,13 +348,17 @@ fun TopBarForum(
                 )
             }
         }
+
+        // Search Bar
+        SearchBarForum(onSearchClick = onSearchClick, navController = navController)
+
+        // Tags Section (optional)
+        TagLineForum()
     }
-    SearchBarForum(navController = navController, onSearchClick = onSearchClick)
-    TagLineForum()
 }
 
 @Composable
-fun SearchBarForum(navController: NavHostController, onSearchClick: (String) -> Unit) {
+fun SearchBarForum(onSearchClick: (String) -> Unit, navController: NavHostController) {
     var searchQuery by remember { mutableStateOf("") }
 
     Row(
@@ -310,8 +366,7 @@ fun SearchBarForum(navController: NavHostController, onSearchClick: (String) -> 
             .fillMaxWidth()
             .background(Color(0xFF13382C))
             .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        verticalAlignment = Alignment.CenterVertically
     ) {
         OutlinedTextField(
             value = searchQuery,
@@ -319,9 +374,7 @@ fun SearchBarForum(navController: NavHostController, onSearchClick: (String) -> 
             placeholder = {
                 Text(
                     text = "Search...",
-                    style = TextStyle(
-                        color = Color.Gray
-                    )
+                    style = TextStyle(color = Color.Gray)
                 )
             },
             singleLine = true,
@@ -337,20 +390,21 @@ fun SearchBarForum(navController: NavHostController, onSearchClick: (String) -> 
             },
             shape = RoundedCornerShape(12.dp)
         )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        // Add button
-        IconButton(onClick = { navController.navigate("addPostScreen") }) {
+        Spacer(modifier = Modifier.width(4.dp))
+        IconButton(onClick = {
+            navController.navigate(Screen.AddPost.route)
+        }) {
             Icon(
                 painter = painterResource(id = R.drawable.iconaddfor),
                 contentDescription = "Add",
                 tint = Color.Unspecified,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(50.dp)
             )
         }
     }
 }
+
+
 
 
 

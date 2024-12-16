@@ -1,17 +1,13 @@
 package com.example.agrisynergi_mobile.database.ModelKomunitas
 
-
-data class KomunitasResponse(
+data class CommunityResponse(
     val success: Boolean,
     val code: Int,
     val message: String,
-    val data: List<Komunitas>,
-    val pagination: Pagination,
-    val timestamp: String,
-    val errors: Any?
+    val data: List<CommunityData>
 )
 
-data class Komunitas(
+data class CommunityData(
     val id_komunitas: Int,
     val id_user: Int,
     val gambar: String,
@@ -27,10 +23,9 @@ data class Komentator(
     val type: String?
 )
 
-data class Pagination(
-    val total: Int,
-    val per_page: Int,
-    val current_page: Int,
-    val total_pages: Int
-)
+sealed class Result<out T> {
+    object Loading : Result<Nothing>()
+    data class Success<out T>(val data: T) : Result<T>()
+    data class Error(val message: String) : Result<Nothing>()
+}
 
