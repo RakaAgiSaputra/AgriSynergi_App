@@ -1,5 +1,6 @@
 package com.example.agrisynergi_mobile
 
+import android.app.Activity
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -67,8 +69,10 @@ import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen5
 import com.example.agrisynergi_mobile.retrofit.model.view.LoginScreen
 import com.example.agrisynergi_mobile.retrofit.model.view.RegisterScreen
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.LoginViewModel
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.OtpViewModel
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.SharedPreferenceManager
+import com.example.agrisynergi_mobile.retrofit.testing.OtpScreen
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
 import com.example.agrisynergymobile.pages.ForumScreen
 import com.google.android.gms.auth.GoogleAuthException
@@ -96,6 +100,8 @@ fun AgrisynergiApp(
     val loginVewModel = LoginViewModel(sharedPreferenceManager)
     val authManager = AuthManageer(context, auth, navController,sharedPreferenceManager)
     val isLoggedIn = sharedPreferenceManager.getLoginStatus()
+    val activity = context as? Activity
+    val otpViewModel: OtpViewModel = viewModel()
 
     val startDestination = if (isLoggedIn) {
         Screen.Beranda.route  // Arahkan ke Beranda jika sudah login
@@ -146,7 +152,9 @@ fun AgrisynergiApp(
                 RegisterScreen(
                     navController = navController,
                     registerViewModel = registerViewModel,
-                    registerWithGoogle = {
+                    credentialManager = credentialManager,
+                    authManageer = authManager
+//                    registerWithGoogle = {
 //                        AuthWithGoogle(
 //                            scope = scope,
 //                            context = context,
@@ -155,7 +163,7 @@ fun AgrisynergiApp(
 //                            navController = navController,
 //                            isUserAgri = false
 //                        )
-                    }
+//                    }
                 )
             }
             composable(Screen.Login.route){
@@ -177,6 +185,15 @@ fun AgrisynergiApp(
 //                        )
 //                    }
                 )
+            }
+
+            composable(Screen.Otp.route){
+                // Check if activity is null
+                if (activity != null) {
+                    OtpScreen(viewModel = otpViewModel, activity = activity)
+                } else {
+                    Toast.makeText(context, "Activity context is not available", Toast.LENGTH_SHORT).show()
+                }
             }
 
             composable(Screen.Beranda.route) {

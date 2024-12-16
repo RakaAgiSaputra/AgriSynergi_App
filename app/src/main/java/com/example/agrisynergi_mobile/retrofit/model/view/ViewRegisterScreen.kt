@@ -26,20 +26,27 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.CredentialManager
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.R
+import com.example.agrisynergi_mobile.auth.AuthManageer
 import com.example.agrisynergi_mobile.database.DatabaseRegister.UserResponse
 import com.example.agrisynergi_mobile.database.RetrofitClient
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import retrofit2.Call
 import retrofit2.Response
 
 @Composable
 fun RegisterScreen(
-    navController: NavHostController, registerViewModel: RegisterViewModel, registerWithGoogle:()->Unit) {
+    navController: NavHostController, registerViewModel: RegisterViewModel,
+    credentialManager: CredentialManager,
+    authManageer: AuthManageer
+) {
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
@@ -217,7 +224,12 @@ fun RegisterScreen(
                 modifier = Modifier.padding(vertical = 16.dp)
             )
             Button(
-                onClick = { registerWithGoogle() },
+                onClick = {
+                    val scope = CoroutineScope(Dispatchers.Main)
+                    authManageer.loginWithGoogle(
+                        scope = scope,
+                        isUserAgri = false, credentialManager = credentialManager)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
