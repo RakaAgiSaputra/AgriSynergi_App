@@ -46,6 +46,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.User.UserProfileScreen
 import com.example.agrisynergi_mobile.auth.AuthManageer
 import com.example.agrisynergi_mobile.consultant.ChatScreen
+import com.example.agrisynergi_mobile.database.testDatabase.Api
+import com.example.agrisynergi_mobile.database.testDatabase.RetrofitClient1
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.pages.AgendaScreen
@@ -103,6 +105,7 @@ fun AgrisynergiApp(
     val loginVewModel = LoginViewModel(sharedPreferenceManager)
     val authManager = AuthManageer(context, auth, navController,sharedPreferenceManager)
     val isLoggedIn = sharedPreferenceManager.getLoginStatus()
+    val api = RetrofitClient1().instance
 
     val startDestination = if (isLoggedIn) {
         Screen.Beranda.route  // Arahkan ke Beranda jika sudah login
@@ -200,7 +203,7 @@ fun AgrisynergiApp(
                 AgendaScreen(navController, agendaId)
             }
             composable(Screen.Market.route) {
-                MarketScreen(navController = navController, viewModel = MarketViewModel())
+                MarketScreen(navController = navController, api = api)
             }
             composable(Screen.Toko.route) {
                 TokoScreen(navController = navController)
@@ -252,7 +255,7 @@ fun AgrisynergiApp(
             composable("keranjang/{marketId}") { backStackEntry ->
                 val marketId = backStackEntry.arguments?.getString("marketId")?.toIntOrNull()
                 if (marketId != null) {
-                    KeranjangScreen(marketId = marketId, navController = navController)
+                    KeranjangScreen(marketId = marketId, navController = navController, api = api)
                 }
             }
             composable("belisekarang/{marketId}") { backStackEntry ->

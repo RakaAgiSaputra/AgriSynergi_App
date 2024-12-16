@@ -6,6 +6,7 @@ import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
 
 //Coba coba database untuk user. Penerapan di halaman notifikasi content
 
@@ -37,6 +38,16 @@ data class Produk(
     val tanggal_ulasan: String?
 )
 
+data class Keranjang(
+    val id_keranjang: Int,
+    val id_produk: Int,
+    val id_user: Int,
+    val total_produk: Int,
+    val total_harga: String,
+    val nama_produk: String,
+    val foto_produk: String
+)
+
 data class Pagination(
     @SerializedName("total") val total: Int,
     @SerializedName("per_page") val perPage: Int,
@@ -60,7 +71,15 @@ data class ProdukResponse(
     @SerializedName("message") val message: String,
     @SerializedName("data") val data: List<Produk>,
     @SerializedName("pagination") val pagination: Pagination,
-    @SerializedName("timestamp") val timestamp: String
+    @SerializedName("timestamp") val timestamp: String,
+    @SerializedName("errors") val errors: Any?
+)
+
+data class KeranjangResponse(
+    val success: Boolean,
+    val code: Int,
+    val message: String,
+    val data: List<Keranjang>
 )
 
 //Api
@@ -70,6 +89,9 @@ interface Api {
 
     @GET("api/produk")
     fun getProduk(): Call<ProdukResponse>
+
+    @GET("api/keranjang")
+    fun getKeranjang(): Call<KeranjangResponse>
 }
 
 //RetrofilClient

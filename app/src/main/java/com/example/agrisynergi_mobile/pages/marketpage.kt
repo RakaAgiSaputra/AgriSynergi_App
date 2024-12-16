@@ -58,19 +58,30 @@ import com.example.agrisynergi_mobile.data.Market
 import com.example.agrisynergi_mobile.database.testDatabase.Produk
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.MarketViewModel
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.text.style.TextOverflow
+import coil.compose.rememberAsyncImagePainter
+import com.example.agrisynergi_mobile.database.testDatabase.Api
+import com.example.agrisynergi_mobile.database.testDatabase.RetrofitClient1
+import com.example.agrisynergi_mobile.database.testDatabase.User
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun MarketScreen(
     navController: NavHostController,
-    viewModel: MarketViewModel
+    api: Api = RetrofitClient1().instance
 ) {
-    val products: List<Produk> by viewModel.products.collectAsState(initial = emptyList())
-    val isLoading: Boolean by viewModel.isLoading.collectAsState(initial = false)
-    val error: String? by viewModel.error.collectAsState(initial = null)
+    val viewModel = remember { MarketViewModel(api) }
+
+    val products by viewModel.products.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     // Trigger fetch when screen is first loaded
     LaunchedEffect(Unit) {
-        viewModel.fetchProducts()
+        viewModel.fetchProducts(api)
     }
 
     Column {
@@ -78,7 +89,6 @@ fun MarketScreen(
             onBackClick = { navController.navigateUp() }
         )
         MarketSearch()
-        // Handle loading and error states
         when {
             isLoading -> {
                 Box(
@@ -89,11 +99,28 @@ fun MarketScreen(
                 }
             }
             error != null -> {
-                Text(
-                    text = "Error: $error",
-                    color = Color.Red,
-                    modifier = Modifier.padding(16.dp)
-                )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = error ?: "Terjadi kesalahan",
+                        color = Color.Red,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+            products.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Tidak ada produk tersedia",
+                        color = Color.Gray,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
             else -> {
                 MarketGrid(navController, products)
@@ -201,25 +228,24 @@ fun MarketItem(navController: NavHostController, produk: Produk) {
         modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth()
-            .height(230.dp)
-            .clickable {
-                navController.navigate("detailmarket/${produk.id_produk}")
-            },
+            .height(260.dp)
+            .clickable { navController.navigate("detailmarket/${produk.id_produk}") },
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         )
-    ){
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(16.dp)
         ) {
             Image(
-                painter = rememberImagePainter(
-                    data = "http://36.74.31.200:8080/uploads/${produk.foto_produk}"
+                painter = rememberAsyncImagePainter(
+                    model = "http://36.74.31.200:8080/api/fileProduk/${produk.foto_produk}",
+                    error = painterResource(id = R.drawable.imagenotavail)
                 ),
-                contentDescription = "Image Produk",
+                contentDescription = "Foto Produk",
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp)
@@ -230,7 +256,7 @@ fun MarketItem(navController: NavHostController, produk: Produk) {
             Text(
                 text = produk.nama,
                 style = TextStyle(
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold
                 ),
@@ -240,17 +266,19 @@ fun MarketItem(navController: NavHostController, produk: Produk) {
             Text(
                 text = produk.deskripsi,
                 style = TextStyle(
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     color = Color.Gray,
                     fontWeight = FontWeight.Normal
                 ),
+                maxLines = 4, // Batasi deskripsi hanya 4 baris
+                overflow = TextOverflow.Ellipsis, // Tambahkan "..." jika teks terlalu panjang
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "Rp${produk.harga}",
                 style = TextStyle(
-                    fontSize = 13.sp,
+                    fontSize = 18.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold
                 ),

@@ -7,44 +7,47 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.agrisynergi_mobile.database.RetrofitClient
+import com.example.agrisynergi_mobile.database.testDatabase.Api
 import com.example.agrisynergi_mobile.database.testDatabase.Produk
-import androidx.compose.foundation.layout.*
-import com.example.agrisynergi_mobile.database.DatabaseProduk.ProdukResponse
+import com.example.agrisynergi_mobile.retrofit.network.RetrofitInstance
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-class MarketViewModel : ViewModel() {
+class MarketViewModel(private val api: Api) : ViewModel() {
     private val _products = MutableStateFlow<List<Produk>>(emptyList())
-    val products: StateFlow<List<Produk>> = _products.asStateFlow()
+    val products: StateFlow<List<Produk>> = _products
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+    val error: StateFlow<String?> = _error
 
-    fun fetchProducts() {
+    fun fetchProducts(api: Api) {
+        _isLoading.value = true
         viewModelScope.launch {
-            _isLoading.value = true
             try {
-                val response = RetrofitClient.apiProduk.getProduk()
-
-                if (response.isSuccessful()) {
-                    val produkResponse = response.body()
-                    produkResponse?.let {
-                        if (it.success) {
-                            _products.value = it.data
-                            _error.value = null
-                        } else {
-                            _error.value = it.message
-                        }
+                val response = withContext(Dispatchers.IO) {
+                    api.getProduk().execute()
+                }
+                if (response.isSuccessful) {
+                    response.body()?.let { body ->
+                        _products.value = body.data // Assuming ProdukResponse has a 'data' field
+                    } ?: run {
+                        _error.value = "Data kosong"
                     }
                 } else {
-                    _error.value = "Failed to fetch products"
+                    _error.value = "Failed to fetch data: ${response.message()}"
                 }
             } catch (e: Exception) {
-                _error.value = "Network error: ${e.message}"
+                _error.value = "Error: ${e.message}"
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun getProductById(id: Int): Produk? {
+        return _products.value.find { it.id_produk == id }
     }
 }

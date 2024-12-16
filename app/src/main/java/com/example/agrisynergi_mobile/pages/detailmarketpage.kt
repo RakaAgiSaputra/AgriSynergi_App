@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -39,6 +40,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,24 +59,82 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.data.datamarket
+import com.example.agrisynergi_mobile.database.testDatabase.Api
+import com.example.agrisynergi_mobile.database.testDatabase.Produk
+import com.example.agrisynergi_mobile.database.testDatabase.RetrofitClient1
 import com.example.agrisynergi_mobile.navigation.Screen
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.MarketViewModel
 
 @Composable
-fun DetailMarketScreen(marketId: Int, navController: NavHostController) {
+fun DetailMarketScreen(
+    marketId: Int,
+    navController: NavHostController,
+    api: Api = RetrofitClient1().instance
+) {
+    val viewModel = remember { MarketViewModel(api) }
+
+    val products by viewModel.products.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    // Trigger fetch when screen is first loaded
+    LaunchedEffect(Unit) {
+        viewModel.fetchProducts(api)
+    }
+
     var showBottomSheetBuyNow by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         DetailTopBar(
             onBackClick = { navController.navigateUp() }
         )
-        ContentMarket(
-            marketId = marketId,
-            modifier = Modifier.weight(1f)
-        )
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            error != null -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = error ?: "Terjadi kesalahan",
+                        color = Color.Red,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+            products.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Tidak ada produk tersedia",
+                        color = Color.Gray,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+            else -> {
+                ContentMarket(
+                    marketId = marketId,
+                    modifier = Modifier.weight(1f),
+                    products
+                )
+            }
+        }
         DetailBottomBar(
             marketId = marketId,
             navController = navController,
@@ -137,8 +198,8 @@ fun DetailTopBar(
 
 
 @Composable
-fun ContentMarket(marketId: Int, modifier: Modifier = Modifier) {
-    val market = datamarket.markets.find { it.id == marketId }
+fun ContentMarket(marketId: Int, modifier: Modifier = Modifier, produk: List<Produk>) {
+    val market = produk.find { it.id_produk == marketId }
     if (market != null) {
         Column(
             modifier = modifier
@@ -147,29 +208,23 @@ fun ContentMarket(marketId: Int, modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                painter = rememberImagePainter(data = market.imageUrl),
-                contentDescription = "Image Market",
+                painter = rememberAsyncImagePainter(
+                    model = "http://36.74.31.200:8080/api/fileProduk/${market.foto_produk}",
+                    error = painterResource(id = R.drawable.imagenotavail)
+                ),
+                contentDescription = "Foto Produk",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .height(300.dp)
                     .padding(16.dp)
                     .shadow(4.dp)
                     .clip(RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Crop
             )
             Text(
-                text = market.title,
+                text = market.nama,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .wrapContentWidth(Alignment.Start)
-            )
-            Text(
-                text = market.description,
-                fontSize = 12.sp,
-                color = Color.Gray,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
@@ -181,13 +236,23 @@ fun ContentMarket(marketId: Int, modifier: Modifier = Modifier) {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .wrapContentWidth(Alignment.Start),
-                rating = 3.5,
-                starsColor = Color.Yellow,
-                onRatingChanged = {}
+                rating = market.rata_rating?.toDoubleOrNull() ?: 0.0,
+                starsColor = Color(color = 0xFFFFA600),
+                onRatingChanged = {},
+
+            )
+            Text(
+                text = market.rata_rating ?: "Belum ada rating",
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .wrapContentWidth(Alignment.Start),
+                color = Color.Gray
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = market.price,
+                text = "Rp${market.harga}",
                 fontSize = 14.sp,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -205,7 +270,7 @@ fun ContentMarket(marketId: Int, modifier: Modifier = Modifier) {
                     .wrapContentWidth(Alignment.Start)
             )
             Text(
-                text = market.productDetail,
+                text = market.deskripsi,
                 fontSize = 12.sp,
                 color = Color.Gray,
                 modifier = Modifier
@@ -289,7 +354,7 @@ fun DetailBottomBar(
                 modifier = Modifier.width(190.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5F897B))
             ) {
-                Text(text = "Masukkan Keranjang", color = Color.White)
+                Text(text = "Masukkan Keranjang", color = Color.White,  maxLines = 1, style = TextStyle(textAlign = TextAlign.Center))
             }
             Spacer(modifier = Modifier.width(8.dp))
             Button(
@@ -389,10 +454,7 @@ fun bottomSheetBuyNow(
                 ) {
                     Text(text = "Beli Sekarang", color = Color.White)
                 }
-
-
             }
-
         }
     }
 }
