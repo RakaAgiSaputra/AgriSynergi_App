@@ -5,11 +5,13 @@ import kotlinx.parcelize.Parcelize
 
 data class UserRequest(
     val nama: String,
-    val password: String,
-    val alamat: String,
+    val email: String,
     val katasandi: String,
-    val no_hp: String
+    val alamat: String,
+    val no_hp: String,
+
 )
+
 data class RegisterRequest(
     val nama: String,
     val password: String,
@@ -19,8 +21,9 @@ data class RegisterRequest(
 )
 
 data class UserResponse(
+    val success: Boolean,
     val message: String,
-    val userId: Int
+    val userId: Int?
 )
 
 data class LoginRequest(
@@ -48,10 +51,11 @@ data class User(
     val alamat: String,
     val email: String,
     val role: String,
-    val foto: String?,
+    val foto: String,
     val provinsi: String,
     val kota: String,
-    val kodepos: String
+    val kodepos: String,
+    val katasandi: String,
 ) : Parcelable
 
 

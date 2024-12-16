@@ -1,5 +1,8 @@
 package com.example.agrisynergi_mobile.User
+
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -19,106 +22,177 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.lifecycle.lifecycleScope
 
 import com.example.agrisynergi_mobile.R
+import com.example.agrisynergi_mobile.retrofit.model.User
+import com.example.agrisynergi_mobile.retrofit.model.UserRequest
+import com.example.agrisynergi_mobile.retrofit.model.UserResponse
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.SharedPreferenceManager
+import com.example.agrisynergi_mobile.retrofit.network.RetrofitInstance
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class EditProfileActivity : ComponentActivity() {
+    private lateinit var sharedPreferenceManager: SharedPreferenceManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedPreferenceManager = SharedPreferenceManager(this)
+
+        val userData = sharedPreferenceManager.run {
+            User(
+                id_user = getUserId(),
+                nama = getUserNama() ?: "",
+                no_hp = prefs.getString("user_no_hp", "") ?: "",
+                alamat = prefs.getString("user_alamat", "") ?: "",
+                email = getUserEmail() ?: "",
+                role = "",
+                foto = getUserFoto() ?: "",
+                provinsi = getUserProvinsi() ?: "",
+                kota = prefs.getString("user_kota", "") ?: "",
+                kodepos = prefs.getString("user_kodepos", "") ?: "",
+                katasandi = getPassword() ?: "",
+            )
+        }
+
         setContent {
-            EditProfileScreen { finish() }
+            EditProfileScreen(
+                userData = userData,
+                onBackPressed = { finish() },
+                onSaveProfile = { updatedUser ->
+                    saveProfileToServer(updatedUser)
+                }
+            )
+        }
+    }
+
+    private fun saveProfileToServer(user: User) {
+        val userId = sharedPreferenceManager.getUserId()
+        if (userId <= 0) {
+            showToast("User ID tidak valid")
+            return
+        }
+
+        val request = UserRequest(
+            nama = user.nama,
+            email = user.email,
+            katasandi = sharedPreferenceManager.getPassword() ?: "",
+            alamat = user.alamat,
+            no_hp = user.no_hp
+        )
+
+        RetrofitInstance.apiService.updateUserProfile(userId, request).enqueue(object : Callback<UserResponse> {
+            override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
+                if (response.isSuccessful && response.body()?.success == true) {
+                    handleResponse(response, user)
+                } else {
+                    Log.e("EditProfile", "Gagal memperbarui: ${response.errorBody()?.string()}")
+                    showToast("Gagal memperbarui profil")
+                }
+            }
+
+            override fun onFailure(call: Call<UserResponse>, t: Throwable) {
+                Log.e("EditProfile", "Error: ${t.message}")
+                showToast("Kesalahan jaringan: ${t.message}")
+            }
+        })
+    }
+
+
+    private fun handleResponse(response: Response<UserResponse>, user: User) {
+        if (response.isSuccessful && response.body()?.success == true) {
+            sharedPreferenceManager.saveUserData(
+                nama = user.nama,
+                email = user.email,
+                alamat = user.alamat,
+                foto = sharedPreferenceManager.getUserFoto() ?: "",
+                no_hp = user.no_hp,
+                provinsi = user.provinsi,
+                kota = user.kota,
+                kodepos = user.kodepos,
+                userId = user.id_user,
+                katasandi = user.katasandi
+            )
+            showToast("Profil berhasil diperbarui")
+        } else {
+            Log.e("EditProfile", "Gagal memperbarui: ${response.errorBody()?.string()}")
+            showToast("Gagal memperbarui profil")
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+}
+
+@Composable
+fun EditProfileScreen(
+    userData: User,
+    onBackPressed: () -> Unit,
+    onSaveProfile: (User) -> Unit
+) {
+    var user by remember { mutableStateOf(userData) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            EditProfileHeader(onBackPressed)
+
+            Column(modifier = Modifier.padding(16.dp)) {
+                TextFieldWithLabel("Nama", user.nama) { user = user.copy(nama = it) }
+                TextFieldWithLabel("Email", user.email) { user = user.copy(email = it) }
+                TextFieldWithLabel("Nomor HP", user.no_hp) { user = user.copy(no_hp = it) }
+                TextFieldWithLabel("Alamat", user.alamat) { user = user.copy(alamat = it) }
+                TextFieldWithLabel("Kota", user.kota) { user = user.copy(kota = it) }
+                TextFieldWithLabel("Provinsi", user.provinsi) { user = user.copy(provinsi = it) }
+                TextFieldWithLabel("Kodepos", user.kodepos) { user = user.copy(kodepos = it) }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        isLoading = true
+                        onSaveProfile(user)
+                    },
+                    enabled = !isLoading,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF5F897B),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("Simpan")
+                }
+            }
+        }
+
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
     }
 }
 
 @Composable
-fun EditProfileScreen(onBackPressed: () -> Unit) {
-    var email by remember { mutableStateOf("asep123@gmail.com") }
-    var username by remember { mutableStateOf("asep12_") }
-    var phoneNumber by remember { mutableStateOf("08123456789") }
-    var password by remember { mutableStateOf("************") }
-    var backgroundColor by remember { mutableStateOf(Color.White) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)  // Use backgroundColor variable
-    ) {
-        EditProfileHeader(onBackPressed)
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Column(
+fun TextFieldWithLabel(label: String, value: String, onValueChange: (String) -> Unit) {
+    Column {
+        Text(label, color = Color.Black)
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-        ) {
-            Text("Email", color = Color.Black)
-            FocusedOutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                placeholder = { Text("contoh@gmail.com", color = Color.Gray) },
-                textColor = Color.Black  // Set typed text color to black
+                .padding(vertical = 8.dp),
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color(0xFF5F897B),
+                unfocusedIndicatorColor = Color.Gray
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text("Username", color = Color.Black)
-            FocusedOutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                placeholder = { Text("terdiri dari huruf dan angka", color = Color.Gray) },
-                textColor = Color.Black  // Set typed text color to black
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text("Nomor HP", color = Color.Black)
-            FocusedOutlinedTextField(
-                value = phoneNumber,
-                onValueChange = { phoneNumber = it },
-                placeholder = { Text("08xxxxxxxxx", color = Color.Gray) },
-                textColor = Color.Black  // Set typed text color to black
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text("Kata Sandi", color = Color.Black)
-            FocusedOutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                visualTransformation = PasswordVisualTransformation(),
-                placeholder = { Text("Kata sandi", color = Color.Gray) },
-                textColor = Color.Black  // Set typed text color to black
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = {},
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5F897B)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp)
-                    .height(48.dp)
-            ) {
-                Text("Simpan", color = Color.White)
-            }
-//            Button(
-//                onClick = {},
-//                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .border(1.dp, Color(0xFF00C853), shape = RoundedCornerShape(24.dp)),
-//                shape = RoundedCornerShape(24.dp)
-//            ) {
-//                Text("Batalkan", color = Color(0xFF00C853))
-//            }
-        }
+        )
     }
 }
-
-
 @Composable
 fun EditProfileHeader(onBackPressed: () -> Unit) {
     Row(
@@ -175,4 +249,3 @@ fun FocusedOutlinedTextField(
         )
     )
 }
-

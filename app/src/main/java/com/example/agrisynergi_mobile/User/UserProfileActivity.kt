@@ -30,10 +30,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import coil.compose.rememberImagePainter
+import coil.request.ImageRequest
 import com.example.agrisynergi_mobile.MainActivity
 import com.example.agrisynergi_mobile.User.DoneCheckoutActivity
 import com.example.agrisynergi_mobile.User.DropshipperCatalog2Activity
@@ -165,7 +169,15 @@ fun ProfileSection(sharedPreferenceManager: SharedPreferenceManager) {
     val nama = sharedPreferenceManager.getUserNama() ?: ""
     val email = sharedPreferenceManager.getUserEmail() ?: ""
     val provinsi = sharedPreferenceManager.getUserProvinsi() ?: ""
-    Log.d("ProfileData", "Nama: $nama, Email: $email, Provinsi: $provinsi")
+    val foto = sharedPreferenceManager.getUserFoto() ?: ""
+
+    // Log debugging
+    Log.d("ProfileSection", "Nama: $nama, Email: $email, Provinsi: $provinsi, Foto URL: $foto")
+
+    // Validasi URL Foto
+    val validFotoUrl = if (foto.isNotEmpty() && foto.startsWith("http")) foto else null
+    Log.d("ProfileSection", "Valid Foto URL: $validFotoUrl")
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -175,13 +187,20 @@ fun ProfileSection(sharedPreferenceManager: SharedPreferenceManager) {
             .padding(24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.pak_tani),
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(validFotoUrl)
+                .crossfade(true)
+                .fallback(R.drawable.pak_tani)
+                .error(R.drawable.no_profile)
+                .build(),
             contentDescription = "Profile Picture",
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(60.dp)
                 .clip(CircleShape)
         )
+
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(nama, fontSize = 16.sp, color = Color(0xFF333333), fontWeight = FontWeight.Medium)
@@ -190,8 +209,6 @@ fun ProfileSection(sharedPreferenceManager: SharedPreferenceManager) {
         }
     }
 }
-
-
 
 @Composable
 fun OptionsList(onOptionSelected: (String) -> Unit, onClickLogout:()-> Unit) {

@@ -6,10 +6,13 @@ import com.example.agrisynergi_mobile.retrofit.model.LoginResponse
 import com.example.agrisynergi_mobile.retrofit.model.User
 import com.example.agrisynergi_mobile.retrofit.model.UserRequest
 import com.example.agrisynergi_mobile.retrofit.model.UserResponse
+import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
@@ -34,5 +37,22 @@ interface ApiService {
     @GET("sawah")
     suspend fun getSawahList(): Response<SawahResponse>
 
+//    @GET("user/profile")
+//    suspend fun getUserProfile(): User
+//
+//    @POST("user/update")
+//    suspend fun updateUserProfile(@Body user: User): ApiResponse
+
+    @PUT("api/users/{id_user}")
+    fun updateUserProfile(
+        @Path("id_user") userId: Int,
+        @Body request: UserRequest
+    ): Call<UserResponse>
+
 
 }
+
+//data class ApiResponse(
+//    val success: Boolean,
+//    val message: String
+//)
