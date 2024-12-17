@@ -43,12 +43,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.database.DatabaseMaps.Sawah
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -722,13 +724,10 @@ fun SawahImage(url: String) {
 
 
 
-//@Preview(showBackground = true)
-//@Composable
-//fun BottomSheetStatisticPreview() {
-//    bottomSheetStatistic(
-//        modifier = Modifier,
-//        showBottomSheetStatistic = true, // Ensure it's visible in the preview
-//        onShowBottomSheetChange = {}
-//    )
-//}
+@Preview(showBackground = true)
+@Composable
+fun BottomSheetStatisticPreview() {
+    val sawahViewModel: SawahViewModel = hiltViewModel()
+    MapsScreen(viewModel = sawahViewModel, rememberNavController())
+}
 
