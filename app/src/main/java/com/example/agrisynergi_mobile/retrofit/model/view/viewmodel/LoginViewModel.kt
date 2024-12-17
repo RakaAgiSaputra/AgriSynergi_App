@@ -1,5 +1,6 @@
 package com.example.agrisynergi_mobile.retrofit.model.view.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -24,27 +25,37 @@ class LoginViewModel(private val sharedPreferenceManager: SharedPreferenceManage
                 val response = RetrofitInstance.apiService.login(request)
 
                 if (response.success) {
-                    _loginResult.value = "Login successful"
+                    Log.d("API Response", "Response received: $response")
 
-                    val userData = response.data?.user
+                    val fotoUrl = "http://36.74.38.214:8080/api/fileUsers/${response.data?.user?.foto ?: ""}"
+                    Log.d("LoginViewModel", "Generated Foto URL: $fotoUrl")
+
                     sharedPreferenceManager.saveToken(response.data?.token ?: "")
                     sharedPreferenceManager.saveLoginStatus(true)
                     sharedPreferenceManager.saveUserData(
                         nama = response.data?.user?.nama ?: "",
                         email = response.data?.user?.email ?: "",
-                        provinsi = response.data?.user?.provinsi ?: ""
+                        provinsi = response.data?.user?.provinsi ?: "",
+                        no_hp = response.data?.user?.no_hp ?: "",
+                        foto = fotoUrl,
+                        kota = response.data?.user?.kota ?: "",
+                        alamat = response.data?.user?.alamat ?: "",
+                        kodepos = response.data?.user?.kodepos ?: "",
+                        userId = response.data?.user?.id_user ?: 0,
+                        katasandi = response.data?.user?.katasandi ?: "",
                     )
 
-                    setLoadingState(false)
+                    _loginResult.value = "Login successful"
                 } else {
                     _loginResult.value = response.message
-                    setLoadingState(false)
                 }
             } catch (e: HttpException) {
+                Log.e("LoginViewModel", "HTTP Exception: ${e.message()}")
                 _loginResult.value = "Login failed: ${e.message()}"
-                setLoadingState(false)
             } catch (e: Exception) {
+                Log.e("LoginViewModel", "Exception: ${e.message}")
                 _loginResult.value = "Login failed: ${e.message}"
+            } finally {
                 setLoadingState(false)
             }
         }

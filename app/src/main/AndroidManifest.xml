@@ -38,7 +38,7 @@
         </activity>
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyBMv4uLFCw4dP2l2q3lg6oRZC0LPCQ20xk" />
+            android:value="AIzaSyB6OwJSoPo3GOl9NPEtgIz-zFQmnJekWuU" />
 
         <activity
             android:name=".User.UserProfileActivity"

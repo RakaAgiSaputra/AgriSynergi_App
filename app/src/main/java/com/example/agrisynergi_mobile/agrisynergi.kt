@@ -78,6 +78,7 @@ import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterView
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.SharedPreferenceManager
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
 import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahViewModel
+import com.example.agrisynergi_mobile.pages.AddPostScreen
 import com.example.agrisynergymobile.pages.ForumScreen
 import com.google.firebase.auth.FirebaseAuth
 
@@ -216,6 +217,9 @@ fun AgrisynergiApp(
             }
             composable(Screen.Konsultasi.route) {
                 ChatScreen(navController= navController)
+            }
+            composable(Screen.AddPost.route) {
+                AddPostScreen(navController = navController)
             }
             composable(Screen.Notifikasi.route) {
                 NotifScreen(navController= navController)
