@@ -2,6 +2,8 @@ package com.example.agrisynergi_mobile.retrofit.network
 
 import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahResponse
 import com.example.agrisynergi_mobile.database.ModelKomunitas.CommunityResponse
+import com.example.agrisynergi_mobile.database.ModelKomunitas.Komentator
+import com.example.agrisynergi_mobile.database.ModelKomunitas.KomentatorResponse
 import com.example.agrisynergi_mobile.retrofit.model.ApiResponse
 import com.example.agrisynergi_mobile.retrofit.model.LoginRequest
 import com.example.agrisynergi_mobile.retrofit.model.LoginResponse
@@ -24,7 +26,6 @@ import retrofit2.http.Query
 
 interface ApiService {
 
-    // Fetch all users
     @GET("users")
     suspend fun getUsers(): ApiResponse
 
@@ -69,9 +70,25 @@ interface ApiService {
     ): Call<UserResponse>
 
 
-}
+
 
 //data class ApiResponse(
 //    val success: Boolean,
 //    val message: String
 //)
+
+    // Fungsi untuk mengambil komentar berdasarkan id_komunitas
+    @GET("komentator")
+    suspend fun getKomentarByKomunitas(
+        @Query("id_komunitas") idKomunitas: Int // Menggunakan query parameter untuk id_komunitas
+    ): Response<List<Komentator>>
+
+    @GET("komentator")
+    suspend fun getKomentator(): Response<KomentatorResponse>
+
+
+
+
+
+}
+

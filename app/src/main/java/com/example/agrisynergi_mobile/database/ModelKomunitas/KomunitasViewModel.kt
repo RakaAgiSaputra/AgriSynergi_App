@@ -1,7 +1,7 @@
 package com.example.agrisynergi_mobile.database.ModelKomunitas
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agrisynergi_mobile.retrofit.model.User
@@ -18,7 +18,8 @@ import com.example.agrisynergi_mobile.database.ModelKomunitas.Result
 @HiltViewModel
 class ForumViewModel @Inject constructor(
     private val communityRepository: CommunityRepository,
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val komentarRepository: KomentarRepository
 ) : ViewModel() {
 
     private val _communityData = MutableStateFlow<Result<CommunityResponse>>(Result.Loading)
@@ -30,11 +31,20 @@ class ForumViewModel @Inject constructor(
     private val _postResult = MutableStateFlow<Result<CommunityResponse>>(Result.Loading)
     val postResult: StateFlow<Result<CommunityResponse>> = _postResult
 
+    // StateFlow untuk semua komentar
+    private val _komentarList = MutableStateFlow<List<Komentator>>(emptyList())
+    val komentarList: StateFlow<List<Komentator>> = _komentarList
+
+    // StateFlow untuk komentar yang dipilih berdasarkan id_komunitas
+    private val _selectedKomentar = MutableStateFlow<List<Komentator>>(emptyList())
+    val selectedKomentar: StateFlow<List<Komentator>> = _selectedKomentar
+
     init {
         fetchCommunityData()
         fetchUsers()
     }
 
+    // Fetch users data
     fun fetchUsers() {
         viewModelScope.launch {
             try {
@@ -56,7 +66,6 @@ class ForumViewModel @Inject constructor(
         }
     }
 
-
     // Fetch community data using the repository
     fun fetchCommunityData() {
         viewModelScope.launch {
@@ -72,25 +81,7 @@ class ForumViewModel @Inject constructor(
     }
 
     // Post community data
-//    fun postCommunityData(
-//        idUser: RequestBody,
-//        image: MultipartBody.Part,
-//        description: RequestBody
-//    ) {
-//        viewModelScope.launch {
-//            _postResult.value = Result.Loading
-//            try {
-//                val result = communityRepository.postCommunityData(idUser, image, description)
-//                _postResult.value = result
-//            } catch (e: Exception) {
-//                _postResult.value = Result.Error("Error: ${e.localizedMessage}")
-//            }
-//        }
-//    }
-
-    // Post community data
     fun postCommunityData(idUser: RequestBody, image: MultipartBody.Part, description: RequestBody) {
-
         _postResult.value = Result.Success(CommunityResponse(
             success = true,
             code = 200,
@@ -99,5 +90,17 @@ class ForumViewModel @Inject constructor(
         ))
     }
 
+    // Mengambil data komentar berdasarkan id_komunitas
+    fun fetchKomentarByKomunitasId(idKomunitas: Int) {
+        viewModelScope.launch {
+            try {
+                val commentsData = komentarRepository.getKomentarByKomunitasId(idKomunitas)
+                _komentarList.value = commentsData
+            } catch (e: Exception) {
+                _komentarList.value = emptyList()
+                println("Error fetching comments: ${e.localizedMessage}")
+            }
+        }
+    }
 
 }
