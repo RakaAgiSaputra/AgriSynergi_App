@@ -24,8 +24,8 @@ class RegisterViewModel : ViewModel() {
     val registerResult: State<String> get() = _registerResult
 
     // Fungsi untuk mendaftar pengguna
-    fun registerUser(username: String, email: String, password: String, address: String, phoneNumber: String) {
-        val userRequest = UserRequest(username, email, password, address, phoneNumber)
+    fun registerUser(nama: String, email: String, katasandi: String, alamat: String, no_hp: String) {
+        val userRequest = UserRequest(nama, email, katasandi, alamat, no_hp)
 
         viewModelScope.launch {
             try {
@@ -50,10 +50,14 @@ class RegisterViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) { RetrofitInstance.apiService.getUsers() }
-                _users.clear()
-                _users.addAll(response)
+                if (response.success) {
+                    _users.clear()
+                    _users.addAll(response.data)
+                } else {
+                    println("Error: ${response.message}")
+                }
             } catch (e: Exception) {
-                // Handle error
+                println("Error fetching users: ${e.message}")
             }
         }
     }

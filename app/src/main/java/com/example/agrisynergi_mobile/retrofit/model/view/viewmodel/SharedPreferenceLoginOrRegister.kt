@@ -2,35 +2,65 @@ package com.example.agrisynergi_mobile.retrofit.model.view.viewmodel
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import com.example.agrisynergi_mobile.auth.AuthManageer
-import com.example.agrisynergi_mobile.navigation.Screen
-import com.google.firebase.auth.FirebaseAuth
+import android.util.Log
+import com.example.agrisynergi_mobile.retrofit.model.LoginRequest
+import com.example.agrisynergi_mobile.retrofit.network.RetrofitInstance.apiService
 
-class SharedPreferenceManager(
-    private val context: Context
-) {
+class SharedPreferenceManager(context: Context) {
+    val prefs: SharedPreferences =
+        context.getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
 
-    private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+    fun saveToken(token: String) {
+        prefs.edit().putString("user_token", token).apply()
+    }
 
-    // Fungsi untuk menyimpan status login di SharedPreferences
+    fun getToken(): String? {
+        return prefs.getString("user_token", null)
+    }
+
     fun saveLoginStatus(isLoggedIn: Boolean) {
-        val editor = sharedPreferences.edit()
-        editor.putBoolean("isLoggedIn", isLoggedIn)
-        editor.apply()  // Apply for async saving
+        prefs.edit().putBoolean("is_logged_in", isLoggedIn).apply()
     }
 
-    // Fungsi untuk mengambil status login dari SharedPreferences
     fun getLoginStatus(): Boolean {
-        return sharedPreferences.getBoolean("isLoggedIn", false)
+        return prefs.getBoolean("is_logged_in", false)
     }
 
-    // Fungsi untuk logout dan menghapus status login dari SharedPreferences
-    fun logout() {
-        val editor = sharedPreferences.edit()
-        editor.remove("isLoggedIn")
+    fun clearPreferences() {
+        prefs.edit().clear().apply()
+    }
+
+    fun saveUserData(
+        nama: String,
+        email: String,
+        katasandi: String,
+        provinsi: String,
+        no_hp: String,
+        foto: String,
+        kota: String,
+        alamat: String,
+        kodepos: String,
+        userId: Int
+    ) {
+        val editor = prefs.edit()
+        editor.putString("user_nama", nama)
+        editor.putString("user_email", email)
+        editor.putString("user_katasandi", katasandi)
+        editor.putString("user_provinsi", provinsi)
+        editor.putString("user_no_hp", no_hp)
+        editor.putString("user_foto", foto)
+        editor.putString("user_kota", kota)
+        editor.putString("user_alamat", alamat)
+        editor.putString("user_kodepos", kodepos)
+        editor.putInt("user_id", userId)
         editor.apply()
     }
+
+    fun getUserId(): Int = prefs.getInt("user_id", -1)
+    fun getUserNama(): String? = prefs.getString("user_nama", "")
+    fun getUserEmail(): String? = prefs.getString("user_email", "")
+    fun getUserProvinsi(): String? = prefs.getString("user_provinsi", "")
+    fun getUserFoto(): String? = prefs.getString("user_foto", "")
+    fun getPassword(): String? = prefs.getString("user_password", "")
+
 }

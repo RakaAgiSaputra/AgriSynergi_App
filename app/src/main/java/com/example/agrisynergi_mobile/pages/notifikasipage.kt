@@ -23,9 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.agrisynergi_mobile.R
 import androidx.compose.runtime.rememberCoroutineScope
-import com.example.agrisynergi_mobile.database.testDatabase.Api
-import com.example.agrisynergi_mobile.database.testDatabase.RetrofitClient1
-import com.example.agrisynergi_mobile.database.testDatabase.User
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,14 +30,14 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun NotifScreen(navController: NavHostController) {
-    val retrofit = RetrofitClient1().instance
+//    val retrofit = RetrofitClient().instance
 
     Surface(modifier = Modifier.fillMaxSize()) {
         Column {
             NotifTopBar(
                 onBackClick = { navController.navigateUp() }
             )
-            NotifContent(api = retrofit)
+//            NotifContent(api = retrofit)
         }
     }
 }
@@ -94,62 +91,62 @@ fun NotifTopBar(
 
 
 //(hanya contoh) bisa dihapus Penerapan database untuk untuk user di halaman notifikasi
-@Composable
-fun NotifContent(api: Api) {
-    val usersData = remember { mutableStateOf<List<User>>(emptyList()) }
-    val errorMessage = remember { mutableStateOf("") }
-    val coroutineScope = rememberCoroutineScope()
-
-    LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            try {
-                val response = withContext(Dispatchers.IO) {
-                    api.getUsers().execute()
-                }
-                if (response.isSuccessful) {
-                    response.body()?.let { body ->
-                        usersData.value = body.data
-                    } ?: run {
-                        errorMessage.value = "Response body is null"
-                    }
-                } else {
-                    errorMessage.value = "Error: ${response.code()} - ${response.message()}"
-                }
-            } catch (e: Exception) {
-                errorMessage.value = "Gagal memuat data: ${e.localizedMessage}"
-            }
-        }
-    }
-
-    if (usersData.value.isNotEmpty()) {
-        LazyColumn(modifier = Modifier.padding(16.dp)) {
-            items(usersData.value) { user ->
-                Column(modifier = Modifier.padding(bottom = 16.dp)) {
-                    androidx.compose.material.Text(
-                        text = "Nama: ${user.name}",
-                        style = TextStyle(
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                    androidx.compose.material.Text(
-                        text = "Email: ${user.email}"
-                    )
-                    androidx.compose.material.Text(
-                        text = "Number: ${user.phoneNumber}"
-                    )
-                }
-            }
-        }
-    } else if (errorMessage.value.isNotEmpty()) {
-        androidx.compose.material.Text(
-            text = errorMessage.value,
-            color = Color.Red
-        )
-    } else {
-        androidx.compose.material.Text(
-            text = "Memuat...",
-            color = Color.Gray
-        )
-    }
-}
-
+//@Composable
+//fun NotifContent(api: Api) {
+//    val usersData = remember { mutableStateOf<List<User>>(emptyList()) }
+//    val errorMessage = remember { mutableStateOf("") }
+//    val coroutineScope = rememberCoroutineScope()
+//
+//    LaunchedEffect(Unit) {
+//        coroutineScope.launch {
+//            try {
+//                val response = withContext(Dispatchers.IO) {
+//                    api.getUsers().execute()
+//                }
+//                if (response.isSuccessful) {
+//                    response.body()?.let { body ->
+//                        usersData.value = body.data
+//                    } ?: run {
+//                        errorMessage.value = "Response body is null"
+//                    }
+//                } else {
+//                    errorMessage.value = "Error: ${response.code()} - ${response.message()}"
+//                }
+//            } catch (e: Exception) {
+//                errorMessage.value = "Gagal memuat data: ${e.localizedMessage}"
+//            }
+//        }
+//    }
+//
+//    if (usersData.value.isNotEmpty()) {
+//        LazyColumn(modifier = Modifier.padding(16.dp)) {
+//            items(usersData.value) { user ->
+//                Column(modifier = Modifier.padding(bottom = 16.dp)) {
+//                    androidx.compose.material.Text(
+//                        text = "Nama: ${user.name}",
+//                        style = TextStyle(
+//                            fontWeight = FontWeight.Bold
+//                        )
+//                    )
+//                    androidx.compose.material.Text(
+//                        text = "Email: ${user.email}"
+//                    )
+//                    androidx.compose.material.Text(
+//                        text = "Number: ${user.phoneNumber}"
+//                    )
+//                }
+//            }
+//        }
+//    } else if (errorMessage.value.isNotEmpty()) {
+//        androidx.compose.material.Text(
+//            text = errorMessage.value,
+//            color = Color.Red
+//        )
+//    } else {
+//        androidx.compose.material.Text(
+//            text = "Memuat...",
+//            color = Color.Gray
+//        )
+//    }
+//}
+//

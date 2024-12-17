@@ -1,16 +1,12 @@
 package com.example.agrisynergi_mobile.retrofit.model.view.viewmodel
 
-import android.content.Context
-import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.agrisynergi_mobile.auth.AuthManageer
 import com.example.agrisynergi_mobile.retrofit.model.LoginRequest
 import com.example.agrisynergi_mobile.retrofit.network.RetrofitInstance
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
@@ -21,40 +17,52 @@ class LoginViewModel(private val sharedPreferenceManager: SharedPreferenceManage
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
-    fun setLoginResult(message: String) {
-        _loginResult.value = message
+    fun login(email: String, password: String) {
+        viewModelScope.launch {
+            setLoadingState(true)
+            try {
+                val request = LoginRequest(email, password)
+                val response = RetrofitInstance.apiService.login(request)
+
+                if (response.success) {
+                    Log.d("API Response", "Response received: $response")
+
+                    val fotoUrl = "http://36.74.38.214:8080/api/fileUsers/${response.data?.user?.foto ?: ""}"
+                    Log.d("LoginViewModel", "Generated Foto URL: $fotoUrl")
+
+                    sharedPreferenceManager.saveToken(response.data?.token ?: "")
+                    sharedPreferenceManager.saveLoginStatus(true)
+                    sharedPreferenceManager.saveUserData(
+                        nama = response.data?.user?.nama ?: "",
+                        email = response.data?.user?.email ?: "",
+                        provinsi = response.data?.user?.provinsi ?: "",
+                        no_hp = response.data?.user?.no_hp ?: "",
+                        foto = fotoUrl,
+                        kota = response.data?.user?.kota ?: "",
+                        alamat = response.data?.user?.alamat ?: "",
+                        kodepos = response.data?.user?.kodepos ?: "",
+                        userId = response.data?.user?.id_user ?: 0,
+                        katasandi = response.data?.user?.katasandi ?: "",
+                    )
+
+                    _loginResult.value = "Login successful"
+                } else {
+                    _loginResult.value = response.message
+                }
+            } catch (e: HttpException) {
+                Log.e("LoginViewModel", "HTTP Exception: ${e.message()}")
+                _loginResult.value = "Login failed: ${e.message()}"
+            } catch (e: Exception) {
+                Log.e("LoginViewModel", "Exception: ${e.message}")
+                _loginResult.value = "Login failed: ${e.message}"
+            } finally {
+                setLoadingState(false)
+            }
+        }
     }
 
     private fun setLoadingState(isLoading: Boolean) {
         _isLoading.value = isLoading
     }
-
-
-    // Fungsi login dengan Retrofit
-    fun login(username: String, password: String) {
-        viewModelScope.launch {
-            setLoadingState(true)
-            try {
-                val request = LoginRequest(username, password)
-                val response = RetrofitInstance.apiService.login(request)
-
-                // Pastikan API merespons dengan status yang benar
-                if (response.isSuccessful) {
-                    _loginResult.value = "Login successful"
-                    setLoadingState(false)
-                    sharedPreferenceManager.saveLoginStatus(true)
-                } else {
-                    _loginResult.value = "Email or password is incorrect"
-                    setLoadingState(false)
-                }
-            } catch (e: HttpException) {
-                _loginResult.value = "Login failed: Username atau password salahCek endpoint api ya... ${e.message}"
-//                _loginResult.value = "Username atau password salah"
-                setLoadingState(false)
-            } catch (e: Exception) {
-                _loginResult.value = "Login failed: ${e.message}"
-                setLoadingState(false)
-            }
-        }
-    }
 }
+
