@@ -1,6 +1,7 @@
 package com.example.agrisynergi_mobile.pages
 
 import android.media.Rating
+import android.util.Log
 import android.widget.RatingBar
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -45,6 +46,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,12 +54,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
@@ -68,6 +72,9 @@ import com.example.agrisynergi_mobile.database.testDatabase.Produk
 import com.example.agrisynergi_mobile.database.testDatabase.RetrofitClient1
 import com.example.agrisynergi_mobile.navigation.Screen
 import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.MarketViewModel
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.MarketViewModelFactory
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun DetailMarketScreen(
@@ -75,8 +82,7 @@ fun DetailMarketScreen(
     navController: NavHostController,
     api: Api = RetrofitClient1().instance
 ) {
-    val viewModel = remember { MarketViewModel(api) }
-
+    val viewModel: MarketViewModel = viewModel(factory = MarketViewModelFactory(api))
     val products by viewModel.products.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -140,7 +146,8 @@ fun DetailMarketScreen(
             navController = navController,
             showBottomSheet = showBottomSheetBuyNow,
             onShowBottomSheetChange = { showBottomSheetBuyNow = it },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            produk = products
         )
     }
     bottomSheetBuyNow(
@@ -209,7 +216,7 @@ fun ContentMarket(marketId: Int, modifier: Modifier = Modifier, produk: List<Pro
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = "http://36.74.31.200:8080/api/fileProduk/${market.foto_produk}",
+                    model = "http://36.74.38.214:8080/api/fileProduk/${market.foto_produk}",
                     error = painterResource(id = R.drawable.imagenotavail)
                 ),
                 contentDescription = "Foto Produk",
@@ -333,9 +340,16 @@ fun DetailBottomBar(
     navController: NavHostController,
     showBottomSheet: Boolean,
     marketId: Int,
+    produk: List<Produk>,
     onShowBottomSheetChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    api: Api = RetrofitClient1().instance
 ) {
+    val market = produk.find { it.id_produk == marketId }
+    val viewModel: MarketViewModel = viewModel(factory = MarketViewModelFactory(api))
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -343,18 +357,45 @@ fun DetailBottomBar(
             .padding(8.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-//                .padding(horizontal = 8.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
+            /*TODO: belum berhasil POST data ke API, bisa navigasi ke Keranjang screen tapi crash setelahnya*/
             Button(
-                onClick = { navController.navigate(Screen.Keranjang.createRoute(marketId = marketId)) },
+                onClick = {
+                    coroutineScope.launch {
+                        market?.let { safeMarket ->
+                            // Replace hardcoded user ID with a dynamic way of getting current user
+                            // Consider using SharedPreferences or a user session management system
+                            val currentUserId = 1 // TODO: Replace with actual user ID retrieval
+
+                            // Add validation for quantity
+                            val quantity = 1  // Or get from some input mechanism
+                            if (quantity > 0) {
+                                viewModel.addToCart(safeMarket.id_produk, currentUserId, quantity)
+
+                                // Wait a bit to see if cart addition was successful
+                                delay(500)  // Small delay to allow error state to update
+
+                                if (viewModel.error.value == null) {
+                                    navController.navigate(Screen.Keranjang.createRoute(safeMarket.id_produk))
+                                } else {
+                                    // Optionally show an error message to the user
+                                    // You could use a Snackbar or Toast
+                                    Log.e("CartError", viewModel.error.value ?: "Unknown error")
+                                }
+                            } else {
+                                // Handle invalid quantity
+                                Log.e("CartError", "Quantity must be greater than 0")
+                            }
+                        }
+                    }
+                },
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.width(190.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5F897B))
             ) {
-                Text(text = "Masukkan Keranjang", color = Color.White,  maxLines = 1, style = TextStyle(textAlign = TextAlign.Center))
+                Text(text = "Masukkan Keranjang", color = Color.White, maxLines = 1)
             }
             Spacer(modifier = Modifier.width(8.dp))
             Button(

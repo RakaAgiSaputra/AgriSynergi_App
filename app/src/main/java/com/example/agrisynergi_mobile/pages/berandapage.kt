@@ -53,9 +53,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.CardColors
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material3.CircularProgressIndicator
 import coil.compose.rememberImagePainter
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.R
@@ -64,6 +68,14 @@ import com.example.agrisynergi_mobile.data.local.sqlite.DatabaseHelper
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
+import com.example.agrisynergi_mobile.database.DatabaseKalender.Kalender
+import com.example.agrisynergi_mobile.database.DatabaseKalender.KalenderViewModel
+import com.example.agrisynergi_mobile.database.testDatabase.Api
+import com.example.agrisynergi_mobile.database.testDatabase.Produk
+import com.example.agrisynergi_mobile.database.testDatabase.RetrofitClient1
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.MarketViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -79,14 +91,28 @@ fun MainScreen(navHostController: NavHostController, contentPadding: PaddingValu
     ) {
         ContentScreen(
             modifier = Modifier.fillMaxSize(),
-            navController = navHostController
+            navController = navHostController,
         )
     }
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun ContentScreen(modifier: Modifier = Modifier, navController: NavHostController) {
+fun ContentScreen(
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+    api: Api = RetrofitClient1().instance
+) {
+    val viewModel = remember { KalenderViewModel(api) }
+
+    val kalender by viewModel.kalender.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchCalendars()
+    }
+
     val webinarList = listOf(
         R.drawable.webinar1,
         R.drawable.webinar2,
@@ -99,7 +125,7 @@ fun ContentScreen(modifier: Modifier = Modifier, navController: NavHostControlle
     var agendaList by remember { mutableStateOf(databaseHelper.readAgendaItems()) }
 
     // State untuk menyimpan agenda yang sedang dipilih
-    var selectedAgenda by remember { mutableStateOf<Agenda?>(null) }
+    var selectedKalender by remember { mutableStateOf<Kalender?>(null) }
 
     // State untuk menampilkan dialog edit
     var showEditDialog by remember { mutableStateOf(false) }
@@ -194,20 +220,56 @@ fun ContentScreen(modifier: Modifier = Modifier, navController: NavHostControlle
                             tint = Color.White
                         )
                     }
-                    AgendaList(
-                        agendaList = agendaList,
-                        onItemClick = { agenda ->
-                            selectedAgenda = agenda // Simpan agenda yang dipilih
+                    when {
+                        isLoading -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
                         }
-                    )
+                        error != null -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = error ?: "Terjadi kesalahan",
+                                    color = Color.Red,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+                        }
+                        kalender.isEmpty() -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Tidak ada agenda saat ini",
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+                        }
+                        else -> {
+                            KalenderList(
+                                items = kalender,
+                                onItemClick = { kalender ->
+                                    selectedKalender = kalender // Simpan agenda yang dipilih
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
     }
-    if (selectedAgenda != null) {
-        AgendaDetailDialog(
-            agenda = selectedAgenda!!,
-            onDismiss = { selectedAgenda = null },
+    if (selectedKalender != null) {
+        KalenderDetailDialog(
+            kalender = selectedKalender!!,
+            onDismiss = { selectedKalender = null },
             onDelete = { agendaId ->
                 // Hapus agenda dari database
                 val deletedRows = databaseHelper.deleteDataAgenda(agendaId)
@@ -216,36 +278,35 @@ fun ContentScreen(modifier: Modifier = Modifier, navController: NavHostControlle
                     agendaList = databaseHelper.readAgendaItems()
                 }
             },
-            onEdit = { agenda ->
-                navController.navigate("agenda/${agenda.id}")
+            onEdit = { kalender->
+                navController.navigate("agenda/${kalender.id_kalender}")
             }
         )
     }
 }
 
-
 @Composable
-fun AgendaList(
-    agendaList: List<Agenda>,
-    onItemClick: (Agenda) -> Unit
+fun KalenderList(
+    items: List<Kalender>,
+    onItemClick: (Kalender) -> Unit
 ) {
     LazyColumn (
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 0.dp, max = 400.dp)
     ) {
-        items(agendaList) { agenda ->
-            AgendaItem(
-                agenda = agenda,
-                onClick = { onItemClick(agenda) }
+        items(items) { kalender ->
+            KalenderItem(
+                kalender,
+                onClick = { onItemClick(kalender) }
             )
         }
     }
 }
 
 @Composable
-fun AgendaItem(
-    agenda: Agenda,
+fun KalenderItem(
+    kalender: Kalender,
     onClick: () -> Unit
 ) {
     Card(
@@ -267,40 +328,42 @@ fun AgendaItem(
             modifier = Modifier
                 .padding(8.dp)
                 .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically // Menjaga elemen sejajar secara vertikal
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = rememberImagePainter(agenda.imagePath),
-                contentDescription = "Gambar Agenda",
-                contentScale = ContentScale.Crop,
+                painter = rememberAsyncImagePainter(
+                    model = "http://36.74.38.214:8080/api/fileKalender/${kalender.gambar}",
+                    error = painterResource(id = R.drawable.imagenotavail)
+                ),
+                contentDescription = "Gambar Kalender",
                 modifier = Modifier
-                    .size(64.dp) // Ukuran gambar
-                    .clip(RoundedCornerShape(8.dp))
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.width(8.dp))
-
             Column(
                 modifier = Modifier.weight(1f) // Memberikan ruang fleksibel agar teks mengisi sisa ruang
             ) {
                 Text(
-                    text = agenda.jenis,
+                    text = kalender.jenis,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
                 Text(
-                    text = agenda.judul,
+                    text = kalender.judul,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.Black
                 )
                 Text(
-                    text = agenda.tanggal,
+                    text =kalender.tanggal,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
                 Text(
-                    text = agenda.deskripsiAgenda,
+                    text = kalender.deskripsi, lineHeight = 10.sp,
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 3, // Batasi deskripsi hanya 3 baris
                     overflow = TextOverflow.Ellipsis, // Tambahkan "..." jika teks terlalu panjang
@@ -322,11 +385,11 @@ fun AgendaItem(
 }
 
 @Composable
-fun AgendaDetailDialog(
-    agenda: Agenda,
+fun KalenderDetailDialog(
+    kalender: Kalender,
     onDismiss: () -> Unit,
     onDelete: (Int) -> Unit,
-    onEdit: (Agenda) -> Unit
+    onEdit: (Kalender) -> Unit
 ) {
     androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -342,14 +405,18 @@ fun AgendaDetailDialog(
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    text = agenda.judul,
+                    text = kalender.judul,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Image(
-                    painter = rememberImagePainter(agenda.imagePath),
-                    contentDescription = null,
+                    painter = rememberAsyncImagePainter(
+                        model = "http://36.74.38.214:8080/api/fileKalender/${kalender.gambar}",
+                        error = painterResource(id = R.drawable.imagenotavail)
+
+                    ),
+                    contentDescription = "Image Kalender",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
@@ -358,13 +425,13 @@ fun AgendaDetailDialog(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = agenda.tanggal,
+                    text = kalender.tanggal,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = agenda.deskripsiAgenda,
+                    text = kalender.deskripsi,
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -374,7 +441,7 @@ fun AgendaDetailDialog(
                 ) {
                     OutlinedButton(
                         onClick = {
-                            onEdit(agenda)
+                            onEdit(kalender)
                             onDismiss()
                         },
                         colors = ButtonDefaults.buttonColors(
@@ -388,7 +455,7 @@ fun AgendaDetailDialog(
                     Spacer(modifier = Modifier.width(4.dp))
                     Button(
                         onClick = {
-                            onDelete(agenda.id)
+                            onDelete(kalender.id_kalender)
                             onDismiss()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red),

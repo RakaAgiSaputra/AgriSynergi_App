@@ -60,8 +60,17 @@ import coil.compose.rememberImagePainter
 import java.io.File
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import android.util.Base64
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.collectAsState
+import com.example.agrisynergi_mobile.database.DatabaseKalender.KalenderRequest
+import com.example.agrisynergi_mobile.database.DatabaseKalender.KalenderViewModel
+import com.example.agrisynergi_mobile.database.testDatabase.RetrofitClient1
+import retrofit2.Response
+import retrofit2.http.POST
+import retrofit2.http.Body
 
-
+/*TODO: belum bisa menambah & memperbarui agenda*/
 @Composable
 fun AgendaScreen(navController: NavHostController, agendaId: Int? = null) {
     Column {
@@ -248,7 +257,11 @@ fun DatePickerInput(
 }
 
 @Composable
-fun AddAgendaScreen(navController: NavHostController, agendaId: Int? = null) {
+fun AddAgendaScreen(
+    navController: NavHostController,
+    agendaId: Int? = null,
+    viewModel: KalenderViewModel = remember { KalenderViewModel(RetrofitClient1().instance)}
+) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     val databaseHelper = DatabaseHelper(context)
@@ -260,6 +273,11 @@ fun AddAgendaScreen(navController: NavHostController, agendaId: Int? = null) {
     var deskripsiAgenda by remember { mutableStateOf("") }
     var selectedOption by remember { mutableStateOf("Select") }
     var expanded by remember { mutableStateOf(false) }
+
+    // Add states for API interaction
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
 
     // If editing an existing agenda, load its data
     LaunchedEffect(agendaId) {
@@ -399,6 +417,40 @@ fun AddAgendaScreen(navController: NavHostController, agendaId: Int? = null) {
                                 return@Button
                             }
 
+                            // Convert selected file to Base64 if exists
+                            val imageBase64 = selectedFileUri?.let { uri ->
+                                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                                    Base64.encodeToString(inputStream.readBytes(), Base64.DEFAULT)
+                                }
+                            } ?: ""
+
+                            // Create request object
+                            val kalenderRequest = KalenderRequest(
+                                id_user = 1, // Replace with actual user ID from your auth system
+                                jenis = selectedOption,
+                                judul = judul,
+                                tanggal = tanggal,
+                                deskripsi = deskripsiAgenda,
+                                gambar = imageBase64
+                            )
+
+                            // Send to API
+                            viewModel.createKalender(kalenderRequest)
+
+                            // Show loading indicator while API call is in progress
+                            if (!isLoading) {
+                                if (error == null) {
+                                    Toast.makeText(
+                                        context,
+                                        "Agenda berhasil ditambahkan!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    navController.popBackStack()
+                                } else {
+                                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+
                             // Save or update image
                             val newImagePath = selectedFileUri?.let { imageUri ->
                                 databaseHelper.saveImageToInternalStorage(context, imageUri)
@@ -447,7 +499,17 @@ fun AddAgendaScreen(navController: NavHostController, agendaId: Int? = null) {
                             containerColor = Color(0xFF5B8C51)
                         )
                     ) {
-                        Text(if (agendaId == null) "Tambah" else "Perbarui", color = Color.White, fontWeight = FontWeight.Bold)
+                        if (isLoading) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        } else {
+                            Text(if (agendaId == null) "Tambah" else "Perbarui", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                    // Add error handling
+                    LaunchedEffect(error) {
+                        error?.let {
+                            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }

@@ -5,11 +5,8 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import com.example.agrisynergi_mobile.database.RetrofitClient1
 import com.example.agrisynergi_mobile.database.testDatabase.Api
 import com.example.agrisynergi_mobile.database.testDatabase.Produk
-import com.example.agrisynergi_mobile.retrofit.network.RetrofitInstance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -43,6 +40,62 @@ class MarketViewModel(private val api: Api) : ViewModel() {
                 _error.value = "Error: ${e.message}"
             } finally {
                 _isLoading.value = false
+            }
+        }
+    }
+
+    fun addToCart(productId: Int, userId: Int, quantity: Int) {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                val response = api.addToCart(productId, userId, quantity)
+                if (response.isSuccessful) {
+                    response.body()?.let { body ->
+                        if (body.success) {
+                            // Refresh the cart after successful addition
+                            refreshCartProducts()
+                            _error.value = null
+                        } else {
+                            _error.value = "Failed to add to cart: ${body.message}"
+                        }
+                    } ?: run {
+                        _error.value = "Empty response from server"
+                    }
+                } else {
+                    _error.value = "Failed to add to cart: ${response.errorBody()?.string() ?: response.message()}"
+                }
+            } catch (e: Exception) {
+                _error.value = "Error: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    private fun refreshCartProducts() {
+        // Implementasikan logika untuk memperbarui daftar produk di keranjang
+        // Misalnya, Anda dapat memanggil API untuk mendapatkan daftar produk terbaru di keranjang
+        // dan memperbarui nilai _products dengan data yang sesuai
+        viewModelScope.launch {
+            try {
+                val cartResponse = api.getKeranjang()
+                if (cartResponse.isSuccessful) {
+                    cartResponse.body()?.let { cartBody ->
+                        if (cartBody.success) {
+                            _products.value = cartBody.data.mapNotNull { keranjang ->
+                                getProductById(keranjang.id_produk)
+                            }
+                        } else {
+                            _error.value = cartBody.message
+                        }
+                    } ?: run {
+                        _error.value = "Data keranjang kosong"
+                    }
+                } else {
+                    _error.value = "Failed to fetch cart products: ${cartResponse.message()}"
+                }
+            } catch (e: Exception) {
+                _error.value = "Error: ${e.message}"
             }
         }
     }

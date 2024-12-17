@@ -1,11 +1,18 @@
 package com.example.agrisynergi_mobile.database.testDatabase
 
+import com.example.agrisynergi_mobile.database.DatabaseKalender.Kalender
+import com.example.agrisynergi_mobile.database.DatabaseKalender.KalenderResponse
 import com.google.android.gms.common.api.Response
 import com.google.gson.annotations.SerializedName
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Body
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 //Coba coba database untuk user. Penerapan di halaman notifikasi content
@@ -76,10 +83,28 @@ data class ProdukResponse(
 )
 
 data class KeranjangResponse(
-    val success: Boolean,
-    val code: Int,
-    val message: String,
-    val data: List<Keranjang>
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("code") val code: Int,
+    @SerializedName("message") val message: String,
+    @SerializedName("data") val data: List<Keranjang>,
+    @SerializedName("pagination") val pagination: Pagination,
+    @SerializedName("timestamp") val timestamp: String,
+    @SerializedName("errors") val errors: Any?
+)
+
+data class CartRequest(
+    val id_produk: Int,
+    val total_produk: Int
+)
+
+data class AddToCartResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("code") val code: Int,
+    @SerializedName("message") val message: String,
+    @SerializedName("data") val data: List<Keranjang>,
+    @SerializedName("pagination") val pagination: Pagination,
+    @SerializedName("timestamp") val timestamp: String,
+    @SerializedName("errors") val errors: Any?
 )
 
 //Api
@@ -90,13 +115,27 @@ interface Api {
     @GET("api/produk")
     fun getProduk(): Call<ProdukResponse>
 
+    @FormUrlEncoded
+    @POST("api/keranjang")
+    suspend fun addToCart(
+        @Field("id_produk") productId: Int,
+        @Field("id_user") userId: Int,
+        @Field("total_produk") quantity: Int
+    ): retrofit2.Response<AddToCartResponse>
+
     @GET("api/keranjang")
-    fun getKeranjang(): Call<KeranjangResponse>
+    suspend fun getKeranjang(): retrofit2.Response<KeranjangResponse>
+
+    @GET("api/kalender")
+    fun getKalender(): Call<KalenderResponse>
+
+    @POST("api/kalender")
+    suspend fun addKalender(@Body kalender: Kalender): Call<KalenderResponse>
 }
 
 //RetrofilClient
 class RetrofitClient1 {
-    private val BASE_URL = "http://36.74.31.200:8080/"
+    private val BASE_URL = "http://36.74.38.214:8080/"
 
     val instance: Api by lazy {
         Retrofit.Builder()
