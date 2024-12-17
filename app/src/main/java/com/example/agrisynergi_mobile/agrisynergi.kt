@@ -41,6 +41,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.agrisynergi_mobile.User.TokoScreen
 import com.example.agrisynergi_mobile.User.UserProfileScreen
 import com.example.agrisynergi_mobile.auth.AuthManageer
 import com.example.agrisynergi_mobile.consultant.ChatScreen
@@ -57,7 +58,7 @@ import com.example.agrisynergi_mobile.pages.KeranjangScreen
 import com.example.agrisynergi_mobile.pages.MainScreen
 import com.example.agrisynergi_mobile.pages.MapsScreen
 import com.example.agrisynergi_mobile.pages.MarketScreen
-import com.example.agrisynergi_mobile.pages.TokoScreen
+//import com.example.agrisynergi_mobile.pages.TokoScreen
 import com.example.agrisynergi_mobile.pages.DetailTokoScreen
 import com.example.agrisynergi_mobile.pages.NotifScreen
 import com.example.agrisynergi_mobile.pages.PengirimanScreen
@@ -199,9 +200,9 @@ fun AgrisynergiApp(
             composable(Screen.Market.route) {
                 MarketScreen(navController = navController, api = api)
             }
-            composable(Screen.Toko.route) {
-                TokoScreen(navController = navController)
-            }
+//            composable(Screen.Toko.route) {
+//                TokoScreen(navController = navController)
+//            }
             composable(Screen.DetailToko.route) {
                 DetailTokoScreen(navController = navController)
             }

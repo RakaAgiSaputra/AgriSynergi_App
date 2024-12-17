@@ -85,6 +85,9 @@
         <activity
             android:name=".User.NewDropshipperActivity"
             android:exported="false" />
+        <activity
+            android:name=".User.TokoActivity"
+            android:exported="false" />
     </application>
 
 

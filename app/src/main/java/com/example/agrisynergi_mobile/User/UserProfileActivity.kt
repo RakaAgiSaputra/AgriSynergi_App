@@ -59,6 +59,9 @@ class UserProfileActivity : ComponentActivity() {
                         "Edit Profile" -> {
                             startActivity(Intent(this, EditProfileActivity::class.java))
                         }
+                        "Toko Saya" -> {
+                            startActivity(Intent(this, TokoActivity::class.java))
+                        }
                         "Riwayat Pesanan" -> {
                             startActivity(Intent(this, OrderHistoryActivity::class.java))
                         }
@@ -95,6 +98,7 @@ class UserProfileActivity : ComponentActivity() {
                         "Checkout" -> {
                             startActivity(Intent(this, CheckoutActivity::class.java))
                         }
+
                     }
                 },
                 onBackClicked = {
@@ -116,7 +120,7 @@ class UserProfileActivity : ComponentActivity() {
 
 
 @Composable
-fun UserProfileScreen(onOptionSelected: (String) -> Unit, onBackClicked: () -> Unit, onClickLogout: () -> Unit) {
+fun UserProfileScreen(onOptionSelected: @Composable (String) -> Unit, onBackClicked: () -> Unit, onClickLogout: () -> Unit) {
     val context = LocalContext.current
     val sharedPreferenceManager = SharedPreferenceManager(context)
     Box(
@@ -211,10 +215,11 @@ fun ProfileSection(sharedPreferenceManager: SharedPreferenceManager) {
 }
 
 @Composable
-fun OptionsList(onOptionSelected: (String) -> Unit, onClickLogout:()-> Unit) {
+fun OptionsList(onOptionSelected: @Composable (String) -> Unit, onClickLogout:()-> Unit) {
     val context = LocalContext.current
     val options = listOf(
         "Edit Profile",
+        "Toko Saya",
         "Riwayat Pesanan",
         "Postingan Saya",
         "Katalog Dropshipper",
@@ -246,6 +251,7 @@ fun OptionsList(onOptionSelected: (String) -> Unit, onClickLogout:()-> Unit) {
             OptionItem(option = option) {
                 when (option) {
                     "Edit Profile" -> context.startActivity(Intent(context, EditProfileActivity::class.java))
+                    "Toko Saya" -> context.startActivity(Intent(context, TokoActivity::class.java))
                     "Riwayat Pesanan" -> context.startActivity(Intent(context, OrderHistoryActivity::class.java))
                     "Postingan Saya" -> context.startActivity(Intent(context, PostingActivity::class.java))
                     "Katalog Dropshipper" -> context.startActivity(Intent(context, DropshipperCatalogActivity::class.java))
@@ -310,41 +316,3 @@ fun OptionItem(option: String, onClick: () -> Unit) {
         }
     }
 }
-
-
-
-//@Composable
-//fun BottomNavigationBar(modifier: Modifier = Modifier) {
-//    Row(
-//        modifier = modifier
-//            .fillMaxWidth()
-//            .background(Color(0xFF13382C))
-//            .padding(vertical = 12.dp),
-//        horizontalArrangement = Arrangement.SpaceAround
-//    ) {
-//        BottomNavItem("Beranda", R.drawable.ic_beranda, isSelected = false)
-//        BottomNavItem("Maps", R.drawable.ic_maps, isSelected = false)
-//        BottomNavItem("Market", R.drawable.ic_market, isSelected = false)
-//        BottomNavItem("Consultation", R.drawable.ic_consultation, isSelected = false)
-//        BottomNavItem("User", R.drawable.ic_profile, isSelected = true)
-//    }
-//}
-
-//@Composable
-//fun BottomNavItem(label: String, iconRes: Int, isSelected: Boolean) {
-//    Column(
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ) {
-//        Icon(
-//            painter = painterResource(id = iconRes),
-//            contentDescription = label,
-//            tint = if (isSelected) Color(0xFF5F897B) else Color.White,
-//            modifier = Modifier.size(24.dp)
-//        )
-//        Text(
-//            text = label,
-//            color = if (isSelected) Color(0xFF5F897B) else Color.White,
-//            fontSize = 12.sp
-//        )
-//    }
-//}
