@@ -1,7 +1,9 @@
-package com.example.edugo_app.pages
+package com.example.agrisynergi_mobile.retrofit.model.view
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -27,14 +30,17 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.R
 import com.example.agrisynergi_mobile.database.DatabaseRegister.UserResponse
-import com.example.agrisynergi_mobile.database.RetrofitClient
+import com.example.agrisynergi_mobile.database.RetrofitClient1
+//import com.example.agrisynergi_mobile.database.RetrofitClient1
 import com.example.agrisynergi_mobile.navigation.Screen
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
 import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Response
 
 @Composable
-fun RegisterScreen(navController: NavHostController) {
+fun RegisterScreen(
+    navController: NavHostController, registerViewModel: RegisterViewModel, registerWithGoogle:()->Unit) {
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
@@ -44,6 +50,21 @@ fun RegisterScreen(navController: NavHostController) {
 
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val context: Context = LocalContext.current
+
+
+    LaunchedEffect(registerViewModel.registerResult.value) {
+        val result = registerViewModel.registerResult.value
+        if (result == "Registration successful") {
+            // Tampilkan Toast dan navigasi ke layar login atau konsultasi
+            Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
+            navController.navigate(Screen.Login.route)
+        } else if (result.startsWith("Registration failed")) {
+            // Tampilkan pesan kesalahan jika registrasi gagal
+            Toast.makeText(context, result, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -123,29 +144,17 @@ fun RegisterScreen(navController: NavHostController) {
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Button Daftar
             Button(
                 onClick = {
-                    if (password == confirmPassword) {
+                    // Validasi form terlebih dahulu
+                    if (username.isEmpty() || email.isEmpty() || phoneNumber.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || address.isEmpty()) {
+                        errorMessage = "Semua kolom harus diisi!"
+                    } else if (password != confirmPassword) {
+                        errorMessage = "Password dan Confirm Password tidak cocok!"
+                    } else {
                         isLoading = true
                         errorMessage = null
-                        registerUser(
-                            username = username,
-                            email = email,
-                            phoneNumber = phoneNumber,
-                            password = password,
-                            address = address,
-                            onSuccess = {
-                                isLoading = false
-                                navController.navigate(Screen.Beranda.route)
-                            },
-                            onError = { error ->
-                                isLoading = false
-                                errorMessage = error
-                            }
-                        )
-                    } else {
-                        errorMessage = "Password tidak cocok!"
+                        registerViewModel.registerUser(username, email, password, address, phoneNumber)
                     }
                 },
                 modifier = Modifier
@@ -160,6 +169,43 @@ fun RegisterScreen(navController: NavHostController) {
                 }
             }
 
+            // Button Daftar
+//            Button(
+//                onClick = {
+//                    if (password == confirmPassword) {
+//                        isLoading = true
+//                        errorMessage = null
+//                        registerUser(
+//                            username = username,
+//                            email = email,
+//                            phoneNumber = phoneNumber,
+//                            password = password,
+//                            address = address,
+//                            onSuccess = {
+//                                isLoading = false
+//                                navController.navigate(Screen.Beranda.route)
+//                            },
+//                            onError = { error ->
+//                                isLoading = false
+//                                errorMessage = error
+//                            }
+//                        )
+//                    } else {
+//                        errorMessage = "Password tidak cocok!"
+//                    }
+//                },
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(50.dp),
+//                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5B8C51))
+//            ) {
+//                if (isLoading) {
+//                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+//                } else {
+//                    Text(text = "Daftar", color = Color.White, fontSize = 18.sp)
+//                }
+//            }
+
             //pesan error
             if (errorMessage != null) {
                 Text(text = errorMessage!!, color = Color.Red, modifier = Modifier.padding(vertical = 8.dp))
@@ -172,7 +218,7 @@ fun RegisterScreen(navController: NavHostController) {
                 modifier = Modifier.padding(vertical = 16.dp)
             )
             Button(
-                onClick = { /* Aksi Login Google */ },
+                onClick = { registerWithGoogle() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -260,7 +306,7 @@ fun registerUser(
     onSuccess: () -> Unit,
     onError: (String) -> Unit
 ) {
-    val api = RetrofitClient.instance
+    val api = RetrofitClient1.instance
     //validasi apakah field kosong
     if (username.isEmpty() || email.isEmpty() || phoneNumber.isEmpty() || password.isEmpty() || address.isEmpty()) {
         onError("All fields must be filled")
@@ -318,5 +364,5 @@ fun registerUser(
 @Preview(showBackground = true)
 @Composable
 fun RegisterScreenPreview() {
-    RegisterScreen(navController = rememberNavController())
+//    RegisterScreen(navController = rememberNavController(),)
 }

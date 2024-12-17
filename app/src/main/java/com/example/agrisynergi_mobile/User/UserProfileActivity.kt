@@ -2,6 +2,7 @@ package com.example.agrisynergi_mobile.User
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -29,15 +30,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import coil.compose.rememberImagePainter
+import coil.request.ImageRequest
 import com.example.agrisynergi_mobile.MainActivity
 import com.example.agrisynergi_mobile.User.DoneCheckoutActivity
 import com.example.agrisynergi_mobile.User.DropshipperCatalog2Activity
 import com.example.agrisynergi_mobile.User.NewDropshipperActivity
 import com.example.agrisynergi_mobile.R
+import com.example.agrisynergi_mobile.navigation.Screen
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.SharedPreferenceManager
 
 
 class UserProfileActivity : ComponentActivity() {
@@ -88,6 +95,9 @@ class UserProfileActivity : ComponentActivity() {
                         "Checkout" -> {
                             startActivity(Intent(this, CheckoutActivity::class.java))
                         }
+                        "Isi Alamat" -> {
+                            startActivity(Intent(this, AlamatActivity::class.java))
+                        }
                     }
                 },
                 onBackClicked = {
@@ -98,6 +108,9 @@ class UserProfileActivity : ComponentActivity() {
                         restoreState = true
                         launchSingleTop = true
                     }
+                },
+                onClickLogout = {
+
                 }
             )
         }
@@ -106,7 +119,9 @@ class UserProfileActivity : ComponentActivity() {
 
 
 @Composable
-fun UserProfileScreen(onOptionSelected: (String) -> Unit, onBackClicked: () -> Unit) {
+fun UserProfileScreen(onOptionSelected: (String) -> Unit, onBackClicked: () -> Unit, onClickLogout: () -> Unit) {
+    val context = LocalContext.current
+    val sharedPreferenceManager = SharedPreferenceManager(context)
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -118,8 +133,8 @@ fun UserProfileScreen(onOptionSelected: (String) -> Unit, onBackClicked: () -> U
                 .verticalScroll(rememberScrollState())
         ) {
             UserProfileHeader(onBackClicked = onBackClicked)
-            ProfileSection()
-            OptionsList(onOptionSelected)
+            ProfileSection(sharedPreferenceManager)
+            OptionsList(onOptionSelected,onClickLogout)
         }
     }
 }
@@ -153,7 +168,19 @@ fun UserProfileHeader(onBackClicked: () -> Unit) {
 
 
 @Composable
-fun ProfileSection() {
+fun ProfileSection(sharedPreferenceManager: SharedPreferenceManager) {
+    val nama = sharedPreferenceManager.getUserNama() ?: ""
+    val email = sharedPreferenceManager.getUserEmail() ?: ""
+    val provinsi = sharedPreferenceManager.getUserProvinsi() ?: ""
+    val foto = sharedPreferenceManager.getUserFoto() ?: ""
+
+    // Log debugging
+    Log.d("ProfileSection", "Nama: $nama, Email: $email, Provinsi: $provinsi, Foto URL: $foto")
+
+    // Validasi URL Foto
+    val validFotoUrl = if (foto.isNotEmpty() && foto.startsWith("http")) foto else null
+    Log.d("ProfileSection", "Valid Foto URL: $validFotoUrl")
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -163,24 +190,31 @@ fun ProfileSection() {
             .padding(24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.pak_tani),
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(validFotoUrl)
+                .crossfade(true)
+                .fallback(R.drawable.pak_tani)
+                .error(R.drawable.no_profile)
+                .build(),
             contentDescription = "Profile Picture",
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(60.dp)
                 .clip(CircleShape)
         )
+
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text("Asep Sarafuddin", fontSize = 16.sp, color = Color(0xFF333333), fontWeight = FontWeight.Medium)
-            Text("asep123@gmail.com", fontSize = 14.sp, color = Color(0xFF777777))
-            Text("Jakarta, Indonesia", fontSize = 14.sp, color = Color(0xFF777777))
+            Text(nama, fontSize = 16.sp, color = Color(0xFF333333), fontWeight = FontWeight.Medium)
+            Text(email, fontSize = 14.sp, color = Color(0xFF777777))
+            Text(provinsi, fontSize = 14.sp, color = Color(0xFF777777))
         }
     }
 }
 
 @Composable
-fun OptionsList(onOptionSelected: (String) -> Unit) {
+fun OptionsList(onOptionSelected: (String) -> Unit, onClickLogout:()-> Unit) {
     val context = LocalContext.current
     val options = listOf(
         "Edit Profile",
@@ -197,6 +231,7 @@ fun OptionsList(onOptionSelected: (String) -> Unit) {
         "Masukkan Diskon",
         "Done Checkout",
         "Checkout",
+        "Isi Alamat"
     )
 
     Column(
@@ -227,7 +262,8 @@ fun OptionsList(onOptionSelected: (String) -> Unit) {
                     "Masukkan Diskon" -> context.startActivity(Intent(context, AddDiscountCodeActivity::class.java))
                     "Done Checkout" -> context.startActivity(Intent(context, DoneCheckoutActivity::class.java))
                     "Checkout" -> context.startActivity(Intent(context, CheckoutActivity::class.java))
-
+                    "Log Out" -> onClickLogout()
+                    "Isi Alamat" -> context.startActivity(Intent(context, AlamatActivity::class.java))
                 }
             }
             if (option == "Jadi Dropshipper" || option == "Log Out") {

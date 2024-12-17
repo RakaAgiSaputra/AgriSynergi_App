@@ -7,9 +7,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 //RetrofilClient
-class RetrofitClient {
+class RetrofitClient1 {
     companion object {
-        private const val BASE_URL = "http://36.82.123.39:8080/" //ganti url Api
+        private const val BASE_URL = "http://36.82.30.227:8080/" //ganti url Api
 
         val instance: Api by lazy {
             val loggingInterceptor = HttpLoggingInterceptor().apply {

@@ -1,5 +1,6 @@
 package com.example.agrisynergymobile.pages
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,18 +12,23 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Comment
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.ThumbDown
+import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -31,47 +37,175 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.focusModifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.agrisynergi_mobile.R
-import com.example.agrisynergi_mobile.data.Forum
-import com.example.agrisynergi_mobile.data.dataforum
+import com.example.agrisynergi_mobile.database.ModelKomunitas.CommunityData
+import com.example.agrisynergi_mobile.database.ModelKomunitas.ForumViewModel
+import com.example.agrisynergi_mobile.database.ModelKomunitas.Komentator
 import com.example.agrisynergi_mobile.navigation.Screen
+import com.example.agrisynergi_mobile.database.ModelKomunitas.Result
+import com.example.agrisynergi_mobile.database.ModelKomunitas.UserViewModel
+import com.example.agrisynergi_mobile.retrofit.model.User
+import com.example.agrisynergi_mobile.retrofit.model.UserData
+import kotlinx.coroutines.launch
 
 //Main Forum
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ForumScreen(navController: NavHostController) {
-    val context = LocalContext.current
-    Surface(color = MaterialTheme.colorScheme.background) {
-        Column {
-            CustomTopBar(
-                navController = navController,
-                onBackClick = { navController.navigateUp() },
-                onSearchClick = { query ->
-                },
-                onAddClick = {
+fun ForumScreen(
+    navController: NavHostController,
+    viewModel: ForumViewModel = hiltViewModel(),
+    userViewModel: UserViewModel = hiltViewModel()
+) {
+    val communityData by viewModel.communityData.collectAsState()
+    val users by viewModel.users.collectAsState()
+    val comments by viewModel.komentarList.collectAsState()
+
+    val bottomSheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
+    val coroutineScope = rememberCoroutineScope()
+    var selectedCommunity by remember { mutableStateOf<CommunityData?>(null) }
+
+    LaunchedEffect(selectedCommunity?.idKomunitas) {
+        selectedCommunity?.idKomunitas?.let { idKomunitas ->
+            viewModel.fetchKomentarByKomunitasId(idKomunitas) // ambil commnt berdasarka idkomunitas
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchCommunityData()
+        viewModel.fetchUsers()
+    }
+
+    BottomSheetScaffold(
+        sheetContent = {
+            selectedCommunity?.let { community ->
+                if (comments.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                } else {
+                    // Display comments with user data
+                    CommentBottomSheetContent(komentarList = comments, users = users)
                 }
-            )
-            val forums = dataforum.forums
-            ForumList(forums = forums)
+            }
+        },
+        sheetPeekHeight = 0.dp,
+        scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column {
+                TopBarForum(
+                    onBackClick = { navController.navigateUp() },
+                    onSearchClick = { query -> /* Handle search query */ },
+                    navController = navController,
+                    onAddClick = { navController.navigate(Screen.AddPost.route) }
+                )
+
+                when (val result = communityData) {
+                    is Result.Loading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    is Result.Success -> {
+                        val communityResponse = result.data
+                        val communityList = communityResponse?.data ?: emptyList()
+                        ForumList(
+                            communityData = communityList,
+                            users = users,
+                            onCommentClick = { community ->
+                                selectedCommunity = community
+                                coroutineScope.launch {
+                                    bottomSheetState.expand()
+                                }
+                            }
+                        )
+                    }
+                    is Result.Error -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Error: ${result.message}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.Red,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(onClick = { viewModel.fetchCommunityData() }) {
+                                    Text("Retry")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 //Setting list forum
 @Composable
-fun ForumList(forums: List<Forum>) {
+fun ForumList(
+    communityData: List<CommunityData>,
+    users: List<User>,
+    onCommentClick: (CommunityData) -> Unit) {
     LazyColumn {
-        items(forums.size) { index ->
-            ForumItem(forum = forums[index])
+        items(communityData) { community ->
+            ForumItem(
+                community = community,
+                users = users,
+                onCommentClick = {onCommentClick(community)})
         }
     }
 }
 
 //Setting Forum Box
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ForumItem(forum: Forum) {
+fun ForumItem(
+    community: CommunityData,
+    users: List<User>,
+    onCommentClick: () -> Unit
+) {
     var isExpanded by remember { mutableStateOf(false) }
-    val word = forum.text.split(" ")
+    val text = community.deskripsi?.split(" ") ?: listOf("No description available")
+    val user = users.find { it.id_user == community.idUser }
+    var isBookmarked by remember { mutableStateOf(false) }
+    var isLiked by remember { mutableStateOf(false) }
+    var isDisLiked by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -79,60 +213,54 @@ fun ForumItem(forum: Forum) {
             .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(1.dp)
-            ) {
-                Row (
-                    modifier = Modifier
-                        .padding(8.dp)
-                ){
-                    Image(
-                        painter = rememberImagePainter(
-                            data = forum.user.profilePic
-                        ),
-                        contentDescription = "Profile Pic",
-                        modifier = Modifier
-                            .size(55.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
+        Box(modifier = Modifier.fillMaxWidth().background(Color.White)) {
+            Column(modifier = Modifier.fillMaxWidth().shadow(1.dp)) {
+                Row(modifier = Modifier.padding(8.dp)) {
+                    if (user != null) {
+                        Image(
+                            painter = rememberAsyncImagePainter(
+                                model = user.foto?.let { "http://36.74.38.214:8080/api/fileUsers/$it" },
+                                error = painterResource(id = R.drawable.imagenotavail)
+                            ),
+                            contentDescription = "Profile Pic",
+                            modifier = Modifier
+                                .size(55.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
                     Spacer(modifier = Modifier.width(15.dp))
                     Column {
-                        Text(
-                            text = forum.user.name,
-                            style = TextStyle(
-                                color = Color.Black,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-
+                        user?.let {
+                            Text(
+                                text = it.nama,
+                                style = TextStyle(
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
                                 )
-                        )
-                        Text(
-                            text = forum.user.username,
-                            style = TextStyle(
-                                color = Color.Gray,
-                                fontSize = 14.sp
                             )
-                        )
+                            Text(
+                                text = it.role,
+                                style = TextStyle(
+                                    color = Color.Gray,
+                                    fontSize = 12.sp
+                                )
+                            )
+                        }
                         Text(
-                            text = forum.date,
+                            text = "21 Sep",
                             style = TextStyle(
                                 color = Color.Gray,
                                 fontSize = 12.sp
                             )
                         )
-
                         Spacer(modifier = Modifier.height(18.dp))
-                        if(isExpanded){
+
+                        if (isExpanded) {
                             Text(
-                                text = forum.text,
+                                text = community.deskripsi ?: "No description available",
                                 style = TextStyle(
                                     color = Color.Black,
                                     fontSize = 12.sp,
@@ -140,15 +268,14 @@ fun ForumItem(forum: Forum) {
                                 )
                             )
                             Text(
-                                text = "Baca lebih sedikit",
+                                text = "Read less",
                                 color = Color.Gray,
                                 fontSize = 12.sp,
-                                modifier = Modifier
-                                    .clickable { isExpanded = false }
+                                modifier = Modifier.clickable { isExpanded = false }
                             )
                         } else {
                             Text(
-                                text = word.take(30).joinToString(" ") + "...",
+                                text = text.take(30).joinToString(" ") + "...",
                                 style = TextStyle(
                                     color = Color.Black,
                                     fontSize = 12.sp,
@@ -156,34 +283,34 @@ fun ForumItem(forum: Forum) {
                                 )
                             )
                             Text(
-                                text = "Baca selengkapnya",
+                                text = "Read more",
                                 color = Color.Gray,
                                 fontSize = 12.sp,
-                                modifier = Modifier
-                                    .clickable { isExpanded = true }
+                                modifier = Modifier.clickable { isExpanded = true }
                             )
                         }
                         Spacer(modifier = Modifier.height(18.dp))
                     }
                 }
 
-                if (forum.hasImage) {
-                    forum.imageUrl?.let {
-                        Spacer(modifier = Modifier.height(3.dp))
-                        Image(
-                            painter = rememberImagePainter(
-                                data = it
-                            ),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(180.dp)
-                                .aspectRatio(16/9f),
-                            contentScale = ContentScale.Crop
-                        )
+                // Community image
+                val communityImageUrl = community.gambar?.takeIf { it.isNotEmpty() }?.let {
+                    "http://36.74.38.214:8080/api/fileKomunitas/$it"
+                } ?: "default_image_url_here"
 
-                    }
-                }
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        model = communityImageUrl,
+                        error = painterResource(id = R.drawable.imagenotavail)
+                    ),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .aspectRatio(16 / 9f),
+                    contentScale = ContentScale.Crop
+                )
+
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     horizontalArrangement = Arrangement.Start,
@@ -191,48 +318,98 @@ fun ForumItem(forum: Forum) {
                         .fillMaxWidth()
                         .padding(top = 2.dp)
                 ) {
-                    IconButton(onClick = { }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Favorite,
-                            contentDescription = "Like",
-                            tint = Color.Black,
-                            modifier = Modifier.size(20.dp).align(Alignment.CenterVertically)
-                        )
+                    IconButton(onClick = {
+                        isLiked = !isLiked
+                        if (isLiked) isDisLiked = false
+                    }) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = if (isLiked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
+                                contentDescription = "Like",
+                                tint = if (isLiked) Color.Red else Color.Black,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .align(Alignment.CenterVertically)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "40",
+                                color = if (isLiked) Color.Red else Color.Black,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
-                    Text(
-                        text = "40",
-                        color = Color.Black,
-                        fontSize = 12.sp,
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-                    IconButton(onClick = { }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Comment,
-                            contentDescription = "Comment",
-                            tint = Color.Black,
-                            modifier = Modifier.size(20.dp).align(Alignment.CenterVertically)
-                        )
+
+                    IconButton(onClick = {
+                        isDisLiked = !isDisLiked
+                        if (isDisLiked) isLiked = false
+                    }) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = if (isDisLiked) Icons.Filled.ThumbDown else Icons.Outlined.ThumbDown,
+                                contentDescription = "DisLike",
+                                tint = if (isDisLiked) Color.Blue else Color.Black,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .align(Alignment.CenterVertically)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "40",
+                                color = if (isDisLiked) Color.Blue else Color.Black,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
-                    Text(
-                        text = "45",
-                        color = Color.Black,
-                        fontSize = 12.sp,
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-                    IconButton(onClick = { }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Bookmarks,
-                            contentDescription = "Bookmark",
-                            tint = Color.Black,
-                            modifier = Modifier.size(20.dp).align(Alignment.CenterVertically)
-                        )
+
+                    IconButton(onClick = onCommentClick) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Comment,
+                                contentDescription = "Comment",
+                                tint = Color.Black,
+                                modifier = Modifier.size(20.dp).align(Alignment.CenterVertically)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "45",
+                                color = Color.Black,
+                                fontSize = 12.sp,
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
+                        }
                     }
-                    Text(
-                        text = "400",
-                        color = Color.Black,
-                        fontSize = 12.sp,
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
+
+                    IconButton(onClick = {
+                        isBookmarked = !isBookmarked
+                    }) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.Bookmarks,
+                                contentDescription = "Bookmark",
+                                tint = if (isBookmarked) Color(0xFF13382C) else Color.Black,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .align(Alignment.CenterVertically)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "400",
+                                color = if (isBookmarked) Color(0xFF13382C) else Color.Black,
+                                fontSize = 12.sp,
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
+                        }
+                    }
+
                     IconButton(onClick = { }) {
                         Icon(
                             imageVector = Icons.Outlined.Share,
@@ -245,23 +422,132 @@ fun ForumItem(forum: Forum) {
             }
         }
     }
-
 }
+
+
+@Composable
+fun CommentBottomSheetContent(komentarList: List<Komentator>, users: List<User>) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        items(komentarList) { komentar ->
+            val user = users.find { it.id_user == komentar.id_user } // Cari user berdasarkan id_user
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                elevation = 4.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Tampilkan foto profil jika ada
+                    if (user?.foto != null) {
+                        Image(
+                            painter = rememberAsyncImagePainter(
+                                model = "http://36.74.38.214:8080/api/fileUsers/${user.foto}",
+                                error = painterResource(id = R.drawable.imagenotavail)
+                            ),
+                            contentDescription = "User Photo",
+                            modifier = Modifier
+                                .size(55.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.imagenotavail),
+                            contentDescription = "Default User Photo",
+                            modifier = Modifier
+                                .size(55.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(15.dp))
+
+                    // Tampilkan nama dan deskripsi komentar
+                    Column {
+                        Text(
+                            text = user?.nama ?: "Anonymous", // Gunakan nama dari user atau default "Anonymous"
+                            style = TextStyle(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        )
+                        Text(
+                            text = komentar.deskripsi ?: "Komentar tidak tersedia", // Null safety untuk deskripsi
+                            style = TextStyle(fontSize = 14.sp, color = Color.Gray)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+//
+//@Composable
+//fun CommentItem(komentator: Komentator) {
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(vertical = 8.dp),
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//        // Avatar pengguna
+//        Image(
+//            painter = painterResource(id = R.drawable.ellipse__2_), // Placeholder untuk foto pengguna
+//            contentDescription = "User Photo",
+//            modifier = Modifier
+//                .size(55.dp)
+//                .clip(CircleShape),
+//            contentScale = ContentScale.Crop
+//        )
+//        Spacer(modifier = Modifier.width(15.dp))
+//
+//        // Detail komentar
+//        Column {
+//            Text(
+//                text = user.nama_user,
+//                style = TextStyle(
+//                    fontSize = 16.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    color = Color.Black
+//                )
+//            )
+//            Text(
+//                text = komentator.deskripsi ?: "Komentar tidak tersedia", // Null safety untuk deskripsi
+//                style = TextStyle(fontSize = 14.sp, color = Color.Gray)
+//            )
+//        }
+//    }
+//}
+
+
 
 //Setting Top Bar
 @Composable
-fun CustomTopBar(
-    navController: NavHostController,
+fun TopBarForum(
     onBackClick: () -> Unit,
     onSearchClick: (String) -> Unit,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    navController: NavHostController
 ) {
     Column {
+        // Top Bar Row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF13382C))
-                .padding(horizontal = 4.dp, vertical = 2.dp),
+                .background(Color(0xFF13382C)),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -284,78 +570,94 @@ fun CustomTopBar(
             }
         }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF13382C))
-                .padding(horizontal = 16.dp, vertical = 0.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            var searchQuery by remember { mutableStateOf("") }
-            TextField(
-                value = searchQuery,
-                onValueChange = {
-                    searchQuery = it
-                    onSearchClick(it)
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(40.dp),
-                placeholder = { Text("Search") },
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color(0xFF5B8C51),
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                shape = RoundedCornerShape(8.dp),
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search Icon",
-                        tint = Color.White
-                    )
-                },
-                singleLine = true
-            )
+        // Search Bar
+        SearchBarForum(onSearchClick = onSearchClick, navController = navController)
 
-            Spacer(modifier = Modifier.width(8.dp))
+        // Tags Section (optional)
+        TagLineForum()
+    }
+}
 
-            // Tombol tambah
-            IconButton(onClick = {
-                onAddClick()
-                navController.navigate("addPostScreen")
-            }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.iconaddfor),
-                    contentDescription = "Add",
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(30.dp)
+@Composable
+fun SearchBarForum(onSearchClick: (String) -> Unit, navController: NavHostController) {
+    var searchQuery by remember { mutableStateOf("") }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF13382C))
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = {
+                Text(
+                    text = "Search...",
+                    style = TextStyle(color = Color.Gray)
                 )
-            }
-        }
-
-        LazyRow(
+            },
+            singleLine = true,
             modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF13382C))
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp)
-        ) {
-            val categories = listOf("#Trending", "#Terbaru", "#Hamajagung", "#Musim", "#BibitJagung", "#Hama", "Panen")
-            items(categories) { category ->
-                Box(
-                    modifier = Modifier
-                        .background(Color.White, shape = RoundedCornerShape(8.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text(text = category, color = Color(0xFF5B8C51), fontSize = 10.sp)
-                }
+                .weight(1f)
+                .height(48.dp)
+                .background(Color.White, shape = RoundedCornerShape(12.dp)),
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = "Search"
+                )
+            },
+            shape = RoundedCornerShape(12.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        IconButton(onClick = {
+            navController.navigate(Screen.AddPost.route)
+        }) {
+            Icon(
+                painter = painterResource(id = R.drawable.iconaddfor),
+                contentDescription = "Add",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(50.dp)
+            )
+        }
+    }
+}
+
+
+
+
+
+@Composable
+fun TagLineForum(){
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF13382C))
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp)
+    ) {
+        val categories = listOf("#Trending", "#Terbaru", "#Hamajagung", "#Musim", "#BibitJagung", "#Hama", "Panen")
+        items(categories) { category ->
+            Box(
+                modifier = Modifier
+                    .background(Color.White, shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(text = category, color = Color(0xFF5B8C51), fontSize = 10.sp)
             }
         }
     }
 }
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+fun MainScreenPreview() {
+    ForumScreen(navController = rememberNavController())
+}
+
 
 
 

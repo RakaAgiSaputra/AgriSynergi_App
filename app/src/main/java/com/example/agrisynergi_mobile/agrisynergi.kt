@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +31,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.CredentialManager
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -38,6 +42,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.agrisynergi_mobile.User.UserProfileScreen
+import com.example.agrisynergi_mobile.auth.AuthManageer
 import com.example.agrisynergi_mobile.consultant.ChatScreen
 import com.example.agrisynergi_mobile.navigation.NavigationItem
 import com.example.agrisynergi_mobile.navigation.Screen
@@ -52,23 +57,44 @@ import com.example.agrisynergi_mobile.pages.MarketScreen
 import com.example.agrisynergi_mobile.pages.NotifScreen
 import com.example.agrisynergi_mobile.pages.SplashScreen
 import com.example.agrisynergi_mobile.pages.login.LoginRegistScreen
-import com.example.agrisynergi_mobile.pages.login.LoginScreen
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen1
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen2
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen3
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen4
 import com.example.agrisynergi_mobile.pages.onboardingpage.OnBoardingScreen5
+import com.example.agrisynergi_mobile.retrofit.model.view.LoginScreen
+import com.example.agrisynergi_mobile.retrofit.model.view.RegisterScreen
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.LoginViewModel
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.RegisterViewModel
+import com.example.agrisynergi_mobile.retrofit.model.view.viewmodel.SharedPreferenceManager
 import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
+import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahViewModel
+import com.example.agrisynergi_mobile.pages.AddPostScreen
 import com.example.agrisynergymobile.pages.ForumScreen
-import com.example.edugo_app.pages.RegisterScreen
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun AgrisynergiApp(
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    auth: FirebaseAuth,
 ) {
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
+    val registerViewModel = RegisterViewModel()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val credentialManager = CredentialManager.create(context)
+    val sharedPreferenceManager = SharedPreferenceManager(context)
+    val loginVewModel = LoginViewModel(sharedPreferenceManager)
+    val authManager = AuthManageer(context, auth, navController,sharedPreferenceManager)
+    val isLoggedIn = sharedPreferenceManager.getLoginStatus()
+
+    val startDestination = if (isLoggedIn) {
+        Screen.Beranda.route  // Arahkan ke Beranda jika sudah login
+    } else {
+        Screen.Splash.route  // Arahkan ke Splash jika belum login
+    }
 
     Scaffold(
         topBar = {
@@ -85,7 +111,7 @@ fun AgrisynergiApp(
     ) { contentPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Splash.route,
+            startDestination = startDestination,
             modifier = modifier.padding(contentPadding)
         ) {
             composable(Screen.Splash.route) {
@@ -110,16 +136,48 @@ fun AgrisynergiApp(
                 LoginRegistScreen(navController)
             }
             composable(Screen.Regist.route) {
-                RegisterScreen(navController)
+                RegisterScreen(
+                    navController = navController,
+                    registerViewModel = registerViewModel,
+                    registerWithGoogle = {
+//                        AuthWithGoogle(
+//                            scope = scope,
+//                            context = context,
+//                            credentialManager = credentialManager,
+//                            auth = auth,
+//                            navController = navController,
+//                            isUserAgri = false
+//                        )
+                    }
+                )
             }
             composable(Screen.Login.route){
-                LoginScreen(navController = navController)
+                LoginScreen(
+                    navController = navController,
+                    viewModel = loginVewModel,
+                    context = context,
+                    coroutineScope = scope,
+                    authManageer = authManager,
+                    credentialManager = credentialManager,
+//                    loginWithGoogle = {
+//                        AuthWithGoogle(
+//                            scope = scope,
+//                            context = context,
+//                            credentialManager = credentialManager,
+//                            auth = auth,
+//                            navController = navController,
+//                            isUserAgri = true
+//                        )
+//                    }
+                )
             }
+
             composable(Screen.Beranda.route) {
                 MainScreen(navHostController = navController, contentPadding = contentPadding)
             }
             composable(Screen.Maps.route) {
-                MapsScreen(navController = navController)
+                val sawahViewModel: SawahViewModel = hiltViewModel()
+                MapsScreen(viewModel = sawahViewModel, navController = navController)
             }
             composable(Screen.Market.route) {
                 MarketScreen(navController = navController)
@@ -137,13 +195,19 @@ fun AgrisynergiApp(
             composable(Screen.Konsultasi.route) {
                 ChatScreen(navController= navController)
             }
+            composable(Screen.AddPost.route) {
+                AddPostScreen(navController = navController)
+            }
             composable(Screen.Notifikasi.route) {
                 NotifScreen(navController= navController)
             }
            composable("user_profile") {
                 UserProfileScreen(
-                    onOptionSelected = { /* Handle navigasi berdasarkan opsi */ },
-                    onBackClicked = { navController.popBackStack() }
+                    onOptionSelected = { },
+                    onBackClicked = { navController.popBackStack() },
+                    onClickLogout = {
+                        logOut(auth, sharedPreferenceManager, navController)
+                    }
                 )
             }
             composable(Screen.Komunitas.route) {
@@ -173,6 +237,14 @@ fun AgrisynergiApp(
             }
 
         }
+    }
+}
+
+private fun logOut(auth: FirebaseAuth, sharedPreferenceManager: SharedPreferenceManager, navController: NavHostController) {
+    auth.signOut()
+//    sharedPreferenceManager.logout()
+    navController.navigate(Screen.Splash.route) {
+        popUpTo(Screen.Beranda.route) { inclusive = true }
     }
 }
 
@@ -319,5 +391,5 @@ private fun BottomNavigationBar(
 @Preview(showBackground = true)
 @Composable
 fun AgrisynergiPreview() {
-    AgrisynergiApp()
+//    AgrisynergiApp()
 }
