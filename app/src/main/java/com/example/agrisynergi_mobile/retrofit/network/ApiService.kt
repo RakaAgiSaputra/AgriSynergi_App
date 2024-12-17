@@ -2,6 +2,7 @@ package com.example.agrisynergi_mobile.retrofit.network
 
 import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahResponse
 import com.example.agrisynergi_mobile.database.ModelKomunitas.CommunityResponse
+import com.example.agrisynergi_mobile.database.ModelKomunitas.KomentarRequest
 import com.example.agrisynergi_mobile.database.ModelKomunitas.Komentator
 import com.example.agrisynergi_mobile.database.ModelKomunitas.KomentatorResponse
 import com.example.agrisynergi_mobile.retrofit.model.ApiResponse
@@ -85,6 +86,12 @@ interface ApiService {
 
     @GET("komentator")
     suspend fun getKomentator(): Response<KomentatorResponse>
+
+    @POST("api/komentator")
+    suspend fun postKomentar(
+        @Body komentarRequest: KomentarRequest
+    ): Response<KomentatorResponse>
+
 
 
 

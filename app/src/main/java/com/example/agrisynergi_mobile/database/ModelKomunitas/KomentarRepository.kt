@@ -16,4 +16,15 @@ class KomentarRepository @Inject constructor(
             throw Exception("Failed to fetch comments")
         }
     }
+
+    suspend fun postKomentar(idUser: Int, idKomunitas: Int, deskripsi: String): Komentator? {
+        val komentarRequest = KomentarRequest(idUser, idKomunitas, deskripsi)
+        val response = apiService.postKomentar(komentarRequest)
+        return if (response.isSuccessful) {
+            response.body()?.data?.firstOrNull()
+        } else {
+            null
+        }
+    }
+
 }

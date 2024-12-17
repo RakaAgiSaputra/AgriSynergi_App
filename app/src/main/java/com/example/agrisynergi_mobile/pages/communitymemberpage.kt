@@ -1,6 +1,7 @@
 package com.example.agrisynergi_mobile.pages
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,7 +42,9 @@ fun CommunityMemberScreen(
         isLoading = false
     }
 
-    Surface {
+    Surface(
+        modifier = Modifier.background(Color.White)
+    ) {
         Column {
             TopBarCommunity(onBackClick = { navController.navigateUp() })
             if (isLoading) {

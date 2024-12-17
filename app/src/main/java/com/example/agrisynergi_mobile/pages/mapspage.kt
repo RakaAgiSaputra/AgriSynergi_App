@@ -614,16 +614,16 @@ fun BottomSheetMarking(
                                 Text(
                                     text = "${selectedSawah?.deskripsi}",
                                     color = Color.White
-                                    )
-                                }
+                                )
                             }
-
                         }
+
                     }
                 }
             }
         }
     }
+}
 
 
 
@@ -859,4 +859,3 @@ fun BottomSheetStatisticPreview() {
     val sawahViewModel: SawahViewModel = hiltViewModel()
     MapsScreen(viewModel = sawahViewModel, rememberNavController())
 }
-
