@@ -16,6 +16,11 @@ AgriSynergi_App adalah aplikasi berbasis Android yang dirancang untuk mendukung 
 - **Material Design 3**: Untuk menciptakan tampilan yang konsisten dan menarik.
 - **Room Database**: Untuk menyimpan data lokal secara efisien.
 - **Retrofit**: Untuk integrasi API.
+- **Hilt**: Untuk Dependency Injection yang efisien dan terstruktur.
+- **ViewModel dan LiveData**: Untuk mengelola dan mengobservasi data secara lifecycle-aware.
+- **Kotlin Coroutines dan Flow**: Untuk mengelola operasi asynchronous dan data stream secara efisien.
+- **Google Maps SDK**: Untuk menampilkan peta dan marker lokasi pengguna.
+
 
 ## 📂 Struktur Proyek
 AgriSynergi_App/<br>
