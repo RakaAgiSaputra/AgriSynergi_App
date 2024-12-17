@@ -28,6 +28,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +37,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,10 +65,71 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.Marker
 import coil.compose.rememberAsyncImagePainter
 import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahViewModel
+import com.google.android.gms.maps.CameraUpdateFactory
+import kotlinx.coroutines.launch
 
 
 //MapsScreen Utama
 @OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun MapsScreen(viewModel: SawahViewModel = hiltViewModel(), navController: NavHostController) {
+//
+//    val sawahList by viewModel.sawahList.collectAsState()
+//    val selectedSawah by viewModel.selectedSawah.collectAsState()
+//
+//    var showBottomSheet by remember { mutableStateOf(false) }
+//
+//    LaunchedEffect(key1 = Unit) {
+//        viewModel.fetchSawahData()
+//    }
+//
+//    Box(modifier = Modifier.fillMaxSize()) {
+//        // Top Bar
+//        mapsTopBar(
+//            onBackClick = { navController.navigateUp() },
+//            onSearchClick = { query -> /* belum ada */ },
+//            modifier = Modifier.zIndex(1f)
+//        )
+//
+//        val cameraPositionState = rememberCameraPositionState {
+//            position = CameraPosition.fromLatLngZoom(LatLng(-3.31669400, 114.59011100), 10f)
+//        }
+//
+//        GoogleMap(
+//            modifier = Modifier.fillMaxSize(),
+//            cameraPositionState = cameraPositionState
+//        ) {
+//            sawahList.forEach { sawah ->
+//                val latLng = LatLng(
+//                    sawah.latitude.toDoubleOrNull() ?: 0.0,
+//                    sawah.longitude.toDoubleOrNull() ?: 0.0
+//                )
+//                Log.d("MapsScreen", "Adding marker: ${sawah.lokasi}, Lat: ${latLng.latitude}, Lng: ${latLng.longitude}")
+//                Marker(
+//                    state = MarkerState(position = latLng),
+//                    title = sawah.lokasi,
+//                    snippet = sawah.deskripsi,
+//                    icon = BitmapDescriptorFactory.fromResource(R.drawable.iconlocjagung), // Custom icon
+//                    onClick = {
+//                        viewModel.getSawahByLokasi(sawah.lokasi)
+//                        showBottomSheet = true
+//                        true
+//                    }
+//                )
+//            }
+//        }
+//    }
+//
+//    // Bottom Sheet
+//    if (showBottomSheet && selectedSawah != null) {
+//        BottomSheetMarking(
+//            showBottomSheetMarking = showBottomSheet,
+//            onShowBottomSheetChange = { showBottomSheet = it },
+//            selectedSawah = selectedSawah
+//        )
+//    }
+//}
+//@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapsScreen(viewModel: SawahViewModel = hiltViewModel(), navController: NavHostController) {
 
@@ -73,22 +137,38 @@ fun MapsScreen(viewModel: SawahViewModel = hiltViewModel(), navController: NavHo
     val selectedSawah by viewModel.selectedSawah.collectAsState()
 
     var showBottomSheet by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
 
-    LaunchedEffect(key1 = Unit) {
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(-3.31669400, 114.59011100), 10f)
+    }
+
+    LaunchedEffect(Unit) {
         viewModel.fetchSawahData()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Top Bar
+        val coroutineScope = rememberCoroutineScope()
         mapsTopBar(
             onBackClick = { navController.navigateUp() },
-            onSearchClick = { query -> /* belum ada */ },
+            onSearchClick = { query ->
+                searchQuery = query
+                val foundSawah = sawahList.find { it.lokasi.equals(query, ignoreCase = true) }
+                if (foundSawah != null) {
+                    val latLng = LatLng(
+                        foundSawah.latitude.toDoubleOrNull() ?: 0.0,
+                        foundSawah.longitude.toDoubleOrNull() ?: 0.0
+                    )
+                    coroutineScope.launch {
+                        cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(latLng, 12f))
+                    }
+                    Log.d("MapsScreen", "Navigating to: ${foundSawah.lokasi}, Lat: ${latLng.latitude}, Lng: ${latLng.longitude}")
+                } else {
+                    Log.d("MapsScreen", "Location not found for query: $query")
+                }
+            },
             modifier = Modifier.zIndex(1f)
         )
-
-        val cameraPositionState = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(LatLng(-3.31669400, 114.59011100), 10f)
-        }
 
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
@@ -99,7 +179,6 @@ fun MapsScreen(viewModel: SawahViewModel = hiltViewModel(), navController: NavHo
                     sawah.latitude.toDoubleOrNull() ?: 0.0,
                     sawah.longitude.toDoubleOrNull() ?: 0.0
                 )
-                Log.d("MapsScreen", "Adding marker: ${sawah.lokasi}, Lat: ${latLng.latitude}, Lng: ${latLng.longitude}")
                 Marker(
                     state = MarkerState(position = latLng),
                     title = sawah.lokasi,
@@ -115,7 +194,6 @@ fun MapsScreen(viewModel: SawahViewModel = hiltViewModel(), navController: NavHo
         }
     }
 
-    // Bottom Sheet
     if (showBottomSheet && selectedSawah != null) {
         BottomSheetMarking(
             showBottomSheetMarking = showBottomSheet,
@@ -209,29 +287,80 @@ fun ZoomControls(onZoomIn: () -> Unit, onZoomOut: () -> Unit, modifier: Modifier
 
 
 //Pengaturan top bar Maps
+//@Composable
+//fun mapsTopBar(
+//    onBackClick: () -> Unit,
+//    onSearchClick: (String) -> Unit,
+//    modifier: Modifier = Modifier
+//) {
+//    TopAppBar(
+//        title = { Text("Maps Screen") },
+//        navigationIcon = {
+//            IconButton(onClick = onBackClick) {
+//                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+//            }
+//        },
+//        actions = {
+//            IconButton(onClick = { onSearchClick("Example Search Query") }) {
+//                Icon(Icons.Default.Search, contentDescription = "Search")
+//            }
+//        },
+//        backgroundColor = Color(0xFF5B8C51),
+//        modifier = modifier
+//    )
+//}
 @Composable
 fun mapsTopBar(
     onBackClick: () -> Unit,
     onSearchClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    TopAppBar(
-        title = { Text("Maps Screen") },
-        navigationIcon = {
-            IconButton(onClick = onBackClick) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-            }
-        },
-        actions = {
-            IconButton(onClick = { onSearchClick("Example Search Query") }) {
-                Icon(Icons.Default.Search, contentDescription = "Search")
-            }
-        },
-        backgroundColor = Color(0xFF5B8C51),
-        modifier = modifier
-    )
-}
+    var searchText by remember { mutableStateOf("") }
 
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 25.dp)
+            .height(56.dp)
+
+            .background(Color(0xFF5B8C51).copy(alpha = 0f)),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Tombol Back
+        IconButton(onClick = onBackClick) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.Black
+            )
+        }
+
+        // Kotak Pencarian
+        TextField(
+            value = searchText,
+            onValueChange = { searchText = it },
+            placeholder = { Text("Search lokasi...", color = Color.White) },
+            singleLine = true,
+            modifier = Modifier
+                .weight(1f)
+                .height(60.dp)
+                .padding(end = 8.dp)
+                .clip(RoundedCornerShape(16.dp)),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color(0xFF5B8C51),
+                unfocusedContainerColor = Color(0xFF5B8C51),
+                disabledContainerColor = Color(0xFF5B8C51),
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            trailingIcon = {
+                IconButton(onClick = { onSearchClick(searchText) }) {
+                    Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.White)
+                }
+            }
+        )
+    }
+}
 
 //Pengaturan Bottom Bar Maps
 //@Composable
