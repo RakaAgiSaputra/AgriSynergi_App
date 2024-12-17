@@ -22,3 +22,10 @@ data class Pagination(
     val current_page: Int,
     val total_pages: Int
 )
+
+data class KomentarRequest(
+    val id_user: Int,
+    val id_komunitas: Int,
+    val deskripsi: String
+)
+

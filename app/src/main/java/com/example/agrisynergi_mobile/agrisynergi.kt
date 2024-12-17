@@ -81,6 +81,7 @@ import com.example.agrisynergi_mobile.utils.shouldShowBottomBar
 import com.example.agrisynergi_mobile.database.DatabaseMaps.SawahViewModel
 import com.example.agrisynergi_mobile.pages.AddPostScreen
 import com.example.agrisynergymobile.pages.ForumScreen
+import com.google.android.gms.maps.GoogleMap
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -190,6 +191,7 @@ fun AgrisynergiApp(
                 val sawahViewModel: SawahViewModel = hiltViewModel()
                 MapsScreen(viewModel = sawahViewModel, navController = navController)
             }
+
             composable(Screen.Agenda.route) {
                 AgendaScreen(navController = navController)
             }
@@ -197,6 +199,8 @@ fun AgrisynergiApp(
                 val agendaId = backStackEntry.arguments?.getString("agendaId")?.toIntOrNull()
                 AgendaScreen(navController, agendaId)
             }
+
+
             composable(Screen.Market.route) {
                 MarketScreen(navController = navController, api = api)
             }

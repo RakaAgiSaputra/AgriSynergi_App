@@ -1,8 +1,10 @@
 package com.example.agrisynergymobile.pages
 
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,6 +16,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.Bookmark
@@ -100,7 +103,7 @@ fun ForumScreen(
                     }
                 } else {
                     // Display comments with user data
-                    CommentBottomSheetContent(komentarList = comments, users = users)
+                    CommentBottomSheetContent(komentarList = comments, users = users, isLiked = false, isDisLiked = false)
                 }
             }
         },
@@ -200,11 +203,12 @@ fun ForumItem(
     onCommentClick: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    val text = community.deskripsi?.split(" ") ?: listOf("No description available")
+    val text = community.deskripsi?.split("No desciption available") ?: listOf("No description available")
     val user = users.find { it.id_user == community.idUser }
     var isBookmarked by remember { mutableStateOf(false) }
     var isLiked by remember { mutableStateOf(false) }
     var isDisLiked by remember { mutableStateOf(false) }
+    var modifiedDescription by remember { mutableStateOf(community.deskripsi ?: "No description available") }
 
     Box(
         modifier = Modifier
@@ -318,9 +322,17 @@ fun ForumItem(
                         .fillMaxWidth()
                         .padding(top = 2.dp)
                 ) {
+                    // Like Button
                     IconButton(onClick = {
                         isLiked = !isLiked
-                        if (isLiked) isDisLiked = false
+                        if (isLiked) {
+                            isDisLiked = false
+                            if (community.deskripsi.isNullOrEmpty()) {
+                                modifiedDescription = "Meyukai postingan anda"
+                            }
+                        } else {
+                            modifiedDescription = community.deskripsi ?: "No description available"
+                        }
                     }) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -329,9 +341,7 @@ fun ForumItem(
                                 imageVector = if (isLiked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
                                 contentDescription = "Like",
                                 tint = if (isLiked) Color.Red else Color.Black,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .align(Alignment.CenterVertically)
+                                modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
@@ -341,30 +351,36 @@ fun ForumItem(
                             )
                         }
                     }
-
-                    IconButton(onClick = {
-                        isDisLiked = !isDisLiked
-                        if (isDisLiked) isLiked = false
-                    }) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = if (isDisLiked) Icons.Filled.ThumbDown else Icons.Outlined.ThumbDown,
-                                contentDescription = "DisLike",
-                                tint = if (isDisLiked) Color.Blue else Color.Black,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .align(Alignment.CenterVertically)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "40",
-                                color = if (isDisLiked) Color.Blue else Color.Black,
-                                fontSize = 12.sp
-                            )
+                    //Dislike Button
+                        IconButton(onClick = {
+                            isDisLiked = !isDisLiked
+                            if (isDisLiked) {
+                                isLiked = false
+                                if (community.deskripsi.isNullOrEmpty()) {
+                                    modifiedDescription = "Tidak menyukai postingan anda"
+                                }
+                            } else {
+                                modifiedDescription = community.deskripsi ?: "No description available"
+                            }
+                        }) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = if (isDisLiked) Icons.Filled.ThumbDown else Icons.Outlined.ThumbDown,
+                                    contentDescription = "DisLike",
+                                    tint = if (isDisLiked) Color.Blue else Color.Black,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "40",
+                                    color = if (isDisLiked) Color.Blue else Color.Black,
+                                    fontSize = 12.sp
+                                )
+                            }
                         }
-                    }
+
 
                     IconButton(onClick = onCommentClick) {
                         Row(
@@ -424,74 +440,221 @@ fun ForumItem(
     }
 }
 
-
 @Composable
-fun CommentBottomSheetContent(komentarList: List<Komentator>, users: List<User>) {
-    LazyColumn(
+fun CommentBottomSheetContent(
+    komentarList: List<Komentator>,
+    users: List<User>,
+    isLiked: Boolean,
+    isDisLiked: Boolean
+) {
+    var komentarBaru by remember { mutableStateOf("") }
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
+            .fillMaxWidth() // Memastikan Box memenuhi lebar parent
+            .padding(vertical = 8.dp) // Menambahkan padding atas dan bawah
     ) {
-        items(komentarList) { komentar ->
-            val user = users.find { it.id_user == komentar.id_user } // Cari user berdasarkan id_user
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                elevation = 4.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Tampilkan foto profil jika ada
-                    if (user?.foto != null) {
-                        Image(
-                            painter = rememberAsyncImagePainter(
-                                model = "http://36.74.38.214:8080/api/fileUsers/${user.foto}",
-                                error = painterResource(id = R.drawable.imagenotavail)
-                            ),
-                            contentDescription = "User Photo",
-                            modifier = Modifier
-                                .size(55.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Image(
-                            painter = painterResource(id = R.drawable.imagenotavail),
-                            contentDescription = "Default User Photo",
-                            modifier = Modifier
-                                .size(55.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
+        Text(
+            text = "Komentar",
+            style = TextStyle(
+                fontSize = 16.sp,
+                color = Color.Black,
+                fontWeight = FontWeight.Bold
+            ),
+            modifier = Modifier.align(Alignment.Center) // Membuat teks berada di tengah
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.ime)
+    ) {
+        // LazyColumn untuk daftar komentar
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            if (komentarList.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Komentar tidak tersedia",
+                            style = TextStyle(fontSize = 16.sp, color = Color.Gray),
+                            textAlign = TextAlign.Center
                         )
                     }
+                }
+            } else {
+                items(komentarList) { komentar ->
+                    val user = users.find { it.id_user == komentar.id_user }
 
-                    Spacer(modifier = Modifier.width(15.dp))
+                    val deskripsiTeks = when {
+                        isLiked && komentar.deskripsi.isNullOrEmpty() -> "Menyukai postingan anda"
+                        isDisLiked && komentar.deskripsi.isNullOrEmpty() -> "Tidak menyukai postingan anda"
+                        else -> komentar.deskripsi ?: "Komentar tidak tersedia"
+                    }
 
-                    // Tampilkan nama dan deskripsi komentar
-                    Column {
-                        Text(
-                            text = user?.nama ?: "Anonymous", // Gunakan nama dari user atau default "Anonymous"
-                            style = TextStyle(
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black
-                            )
-                        )
-                        Text(
-                            text = komentar.deskripsi ?: "Komentar tidak tersedia", // Null safety untuk deskripsi
-                            style = TextStyle(fontSize = 14.sp, color = Color.Gray)
-                        )
+                    Column (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Foto profil user
+                            if (user?.foto != null) {
+                                Image(
+                                    painter = rememberAsyncImagePainter(
+                                        model = "http://36.74.38.214:8080/api/fileUsers/${user.foto}",
+                                        error = painterResource(id = R.drawable.imagenotavail)
+                                    ),
+                                    contentDescription = "User Photo",
+                                    modifier = Modifier
+                                        .size(55.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Image(
+                                    painter = painterResource(id = R.drawable.imagenotavail),
+                                    contentDescription = "Default User Photo",
+                                    modifier = Modifier
+                                        .size(55.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(15.dp))
+
+                            // Nama dan deskripsi komentar
+                            Column {
+                                Text(
+                                    text = user?.nama ?: "Anonymous",
+                                    style = TextStyle(
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.Black
+                                    )
+                                )
+                                Text(
+                                    text = deskripsiTeks,
+                                    style = TextStyle(fontSize = 14.sp, color = Color.Gray)
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
+
+        // OutlinedTextField untuk user input
+        OutlinedTextField(
+            value = komentarBaru,
+            onValueChange = { komentarBaru = it },
+            placeholder = { Text("Tambahkan komentar...") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .windowInsetsPadding(WindowInsets.ime),
+            shape = RoundedCornerShape(25.dp),
+            trailingIcon = {
+                IconButton(onClick = {
+                    // Tambahkan logika untuk mengirim komentar di sini
+                    println("Komentar dikirim: $komentarBaru")
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Send,
+                        contentDescription = "Send Comment",
+                        tint = Color(0xFF13382C)
+                    )
+                }
+            },
+            singleLine = true
+        )
     }
 }
+
+
+
+//
+//@Composable
+//fun CommentBottomSheetContent(komentarList: List<Komentator>, users: List<User>) {
+//    LazyColumn(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(16.dp)
+//    ) {
+//        items(komentarList) { komentar ->
+//            val user = users.find { it.id_user == komentar.id_user } // Cari user berdasarkan id_user
+//            Card(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(vertical = 4.dp),
+//                elevation = 4.dp
+//            ) {
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(8.dp),
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    // Tampilkan foto profil jika ada
+//                    if (user?.foto != null) {
+//                        Image(
+//                            painter = rememberAsyncImagePainter(
+//                                model = "http://36.74.38.214:8080/api/fileUsers/${user.foto}",
+//                                error = painterResource(id = R.drawable.imagenotavail)
+//                            ),
+//                            contentDescription = "User Photo",
+//                            modifier = Modifier
+//                                .size(55.dp)
+//                                .clip(CircleShape),
+//                            contentScale = ContentScale.Crop
+//                        )
+//                    } else {
+//                        Image(
+//                            painter = painterResource(id = R.drawable.imagenotavail),
+//                            contentDescription = "Default User Photo",
+//                            modifier = Modifier
+//                                .size(55.dp)
+//                                .clip(CircleShape),
+//                            contentScale = ContentScale.Crop
+//                        )
+//                    }
+//
+//                    Spacer(modifier = Modifier.width(15.dp))
+//
+//                    // Tampilkan nama dan deskripsi komentar
+//                    Column {
+//                        Text(
+//                            text = user?.nama ?: "Anonymous", // Gunakan nama dari user atau default "Anonymous"
+//                            style = TextStyle(
+//                                fontSize = 16.sp,
+//                                fontWeight = FontWeight.Bold,
+//                                color = Color.Black
+//                            )
+//                        )
+//                        Text(
+//                            text = komentar.deskripsi ?: "Komentar tidak tersedia", // Null safety untuk deskripsi
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Gray)
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
 
 
 //
