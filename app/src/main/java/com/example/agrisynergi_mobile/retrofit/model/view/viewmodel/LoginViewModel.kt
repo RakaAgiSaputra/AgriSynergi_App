@@ -27,7 +27,7 @@ class LoginViewModel(private val sharedPreferenceManager: SharedPreferenceManage
                 if (response.success) {
                     Log.d("API Response", "Response received: $response")
 
-                    val fotoUrl = "http://36.74.38.214:8080/api/fileUsers/${response.data?.user?.foto ?: ""}"
+                    val fotoUrl = "https://gtk62vzp-3000.asse.devtunnels.ms/api/fileUsers/${response.data?.user?.foto ?: ""}"
                     Log.d("LoginViewModel", "Generated Foto URL: $fotoUrl")
 
                     sharedPreferenceManager.saveToken(response.data?.token ?: "")

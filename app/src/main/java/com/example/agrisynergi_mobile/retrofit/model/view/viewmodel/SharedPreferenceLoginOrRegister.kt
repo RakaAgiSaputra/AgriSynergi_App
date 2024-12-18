@@ -5,8 +5,11 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.example.agrisynergi_mobile.retrofit.model.LoginRequest
 import com.example.agrisynergi_mobile.retrofit.network.RetrofitInstance.apiService
+import javax.inject.Inject
 
-class SharedPreferenceManager(context: Context) {
+class SharedPreferenceManager @Inject constructor(
+    private val context: Context
+) {
     val prefs: SharedPreferences =
         context.getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
 
@@ -62,5 +65,6 @@ class SharedPreferenceManager(context: Context) {
     fun getUserProvinsi(): String? = prefs.getString("user_provinsi", "")
     fun getUserFoto(): String? = prefs.getString("user_foto", "")
     fun getPassword(): String? = prefs.getString("user_password", "")
+
 
 }

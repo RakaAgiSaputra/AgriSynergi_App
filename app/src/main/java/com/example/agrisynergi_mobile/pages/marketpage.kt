@@ -242,7 +242,7 @@ fun MarketItem(navController: NavHostController, produk: Produk) {
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = "http://36.74.38.214:8080/api/fileProduk/${produk.foto_produk}",
+                    model = "https://gtk62vzp-3000.asse.devtunnels.ms/api/fileProduk/${produk.foto_produk}",
                     error = painterResource(id = R.drawable.imagenotavail)
                 ),
                 contentDescription = "Foto Produk",

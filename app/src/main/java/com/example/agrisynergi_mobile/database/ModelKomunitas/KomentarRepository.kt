@@ -1,6 +1,7 @@
 package com.example.agrisynergi_mobile.database.ModelKomunitas
 
 import com.example.agrisynergi_mobile.retrofit.network.ApiService
+import retrofit2.Response
 import javax.inject.Inject
 
 class KomentarRepository @Inject constructor(
@@ -17,14 +18,10 @@ class KomentarRepository @Inject constructor(
         }
     }
 
-    suspend fun postKomentar(idUser: Int, idKomunitas: Int, deskripsi: String): Komentator? {
-        val komentarRequest = KomentarRequest(idUser, idKomunitas, deskripsi)
-        val response = apiService.postKomentar(komentarRequest)
-        return if (response.isSuccessful) {
-            response.body()?.data?.firstOrNull()
-        } else {
-            null
-        }
+    suspend fun postKomentar(komentarRequest: KomentarRequest): Response<KomentatorResponse> {
+        return apiService.postKomentar(komentarRequest)
     }
+
+
 
 }

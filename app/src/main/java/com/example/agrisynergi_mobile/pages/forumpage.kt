@@ -65,6 +65,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ForumScreen(
     navController: NavHostController,
+    idKomunitas: Int,
     viewModel: ForumViewModel = hiltViewModel(),
     userViewModel: UserViewModel = hiltViewModel()
 ) {
@@ -76,9 +77,12 @@ fun ForumScreen(
     val coroutineScope = rememberCoroutineScope()
     var selectedCommunity by remember { mutableStateOf<CommunityData?>(null) }
 
+    val komentarList by viewModel.komentarList.collectAsState()
+
+
     LaunchedEffect(selectedCommunity?.idKomunitas) {
         selectedCommunity?.idKomunitas?.let { idKomunitas ->
-            viewModel.fetchKomentarByKomunitasId(idKomunitas) // ambil commnt berdasarka idkomunitas
+            viewModel.fetchKomentarByKomunitasId(idKomunitas) // ambil comment berdasarkan idKomunitas
         }
     }
 
@@ -103,7 +107,14 @@ fun ForumScreen(
                     }
                 } else {
                     // Display comments with user data
-                    CommentBottomSheetContent(komentarList = comments, users = users, isLiked = false, isDisLiked = false)
+                    CommentBottomSheetContent(
+                        komentarList = komentarList,
+                        users = users,
+                        isLiked = false, // Change based on your app logic
+                        isDisLiked = false, // Change based on your app logic
+                        idKomunitas = idKomunitas,
+                        viewModel = viewModel
+                    )
                 }
             }
         },
@@ -178,6 +189,7 @@ fun ForumScreen(
     }
 }
 
+
 //Setting list forum
 @Composable
 fun ForumList(
@@ -223,7 +235,7 @@ fun ForumItem(
                     if (user != null) {
                         Image(
                             painter = rememberAsyncImagePainter(
-                                model = user.foto?.let { "http://36.74.38.214:8080/api/fileUsers/$it" },
+                                model = user.foto?.let { "https://gtk62vzp-3000.asse.devtunnels.ms/api/fileUsers/$it" },
                                 error = painterResource(id = R.drawable.imagenotavail)
                             ),
                             contentDescription = "Profile Pic",
@@ -299,7 +311,7 @@ fun ForumItem(
 
                 // Community image
                 val communityImageUrl = community.gambar?.takeIf { it.isNotEmpty() }?.let {
-                    "http://36.74.38.214:8080/api/fileKomunitas/$it"
+                    "https://gtk62vzp-3000.asse.devtunnels.ms/api/fileKomunitas/$it"
                 } ?: "default_image_url_here"
 
                 Image(
@@ -352,34 +364,34 @@ fun ForumItem(
                         }
                     }
                     //Dislike Button
-                        IconButton(onClick = {
-                            isDisLiked = !isDisLiked
-                            if (isDisLiked) {
-                                isLiked = false
-                                if (community.deskripsi.isNullOrEmpty()) {
-                                    modifiedDescription = "Tidak menyukai postingan anda"
-                                }
-                            } else {
-                                modifiedDescription = community.deskripsi ?: "No description available"
+                    IconButton(onClick = {
+                        isDisLiked = !isDisLiked
+                        if (isDisLiked) {
+                            isLiked = false
+                            if (community.deskripsi.isNullOrEmpty()) {
+                                modifiedDescription = "Tidak menyukai postingan anda"
                             }
-                        }) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = if (isDisLiked) Icons.Filled.ThumbDown else Icons.Outlined.ThumbDown,
-                                    contentDescription = "DisLike",
-                                    tint = if (isDisLiked) Color.Blue else Color.Black,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "40",
-                                    color = if (isDisLiked) Color.Blue else Color.Black,
-                                    fontSize = 12.sp
-                                )
-                            }
+                        } else {
+                            modifiedDescription = community.deskripsi ?: "No description available"
                         }
+                    }) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = if (isDisLiked) Icons.Filled.ThumbDown else Icons.Outlined.ThumbDown,
+                                contentDescription = "DisLike",
+                                tint = if (isDisLiked) Color.Blue else Color.Black,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "40",
+                                color = if (isDisLiked) Color.Blue else Color.Black,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
 
 
                     IconButton(onClick = onCommentClick) {
@@ -445,37 +457,46 @@ fun CommentBottomSheetContent(
     komentarList: List<Komentator>,
     users: List<User>,
     isLiked: Boolean,
-    isDisLiked: Boolean
+    isDisLiked: Boolean,
+    idKomunitas: Int, // Pass `idKomunitas` as a parameter
+    viewModel: ForumViewModel // Inject the ViewModel here
 ) {
     var komentarBaru by remember { mutableStateOf("") }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth() // Memastikan Box memenuhi lebar parent
-            .padding(vertical = 8.dp) // Menambahkan padding atas dan bawah
-    ) {
-        Text(
-            text = "Komentar",
-            style = TextStyle(
-                fontSize = 16.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Bold
-            ),
-            modifier = Modifier.align(Alignment.Center) // Membuat teks berada di tengah
-        )
-    }
+    var errorMessage by remember { mutableStateOf("") }
 
+    // Observe komentarList from ViewModel
+    val komentarState by viewModel.komentarList.collectAsState()
+
+    // UI Content
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.ime)
+            .windowInsetsPadding(WindowInsets.ime) // Adjust for the keyboard
     ) {
-        // LazyColumn untuk daftar komentar
+        // Header
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Text(
+                text = "Komentar",
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = Modifier.align(Alignment.Center) // Center align
+            )
+        }
+
+        // Comments List
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            if (komentarList.isEmpty()) {
+            if (komentarState.isEmpty()) {
                 item {
                     Box(
                         modifier = Modifier
@@ -491,7 +512,7 @@ fun CommentBottomSheetContent(
                     }
                 }
             } else {
-                items(komentarList) { komentar ->
+                items(komentarState) { komentar ->
                     val user = users.find { it.id_user == komentar.id_user }
 
                     val deskripsiTeks = when {
@@ -500,7 +521,7 @@ fun CommentBottomSheetContent(
                         else -> komentar.deskripsi ?: "Komentar tidak tersedia"
                     }
 
-                    Column (
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
@@ -511,11 +532,11 @@ fun CommentBottomSheetContent(
                                 .padding(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Foto profil user
+                            // User photo
                             if (user?.foto != null) {
                                 Image(
                                     painter = rememberAsyncImagePainter(
-                                        model = "http://36.74.38.214:8080/api/fileUsers/${user.foto}",
+                                        model = "https://gtk62vzp-3000.asse.devtunnels.ms/api/fileUsers/${user.foto}",
                                         error = painterResource(id = R.drawable.imagenotavail)
                                     ),
                                     contentDescription = "User Photo",
@@ -537,7 +558,7 @@ fun CommentBottomSheetContent(
 
                             Spacer(modifier = Modifier.width(15.dp))
 
-                            // Nama dan deskripsi komentar
+                            // User name and comment
                             Column {
                                 Text(
                                     text = user?.nama ?: "Anonymous",
@@ -558,20 +579,37 @@ fun CommentBottomSheetContent(
             }
         }
 
-        // OutlinedTextField untuk user input
+        // Comment Input Field
         OutlinedTextField(
             value = komentarBaru,
             onValueChange = { komentarBaru = it },
             placeholder = { Text("Tambahkan komentar...") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .windowInsetsPadding(WindowInsets.ime),
+                .padding(16.dp),
             shape = RoundedCornerShape(25.dp),
             trailingIcon = {
                 IconButton(onClick = {
-                    // Tambahkan logika untuk mengirim komentar di sini
-                    println("Komentar dikirim: $komentarBaru")
+                    if (komentarBaru.isNotBlank()) {
+                        // Post the comment
+                        viewModel.postKomentar(
+                            idKomunitas = idKomunitas,
+                            deskripsi = komentarBaru,
+                            type = "",
+                            onSuccess = { komentar ->
+                                // Update UI
+                                errorMessage = ""
+                                komentarBaru = ""
+                                viewModel.fetchKomentarByKomunitasId(idKomunitas) // Refresh comments
+                            },
+                            onError = { error ->
+                                // Handle error
+                                errorMessage = error
+                            }
+                        )
+                    } else {
+                        errorMessage = "Komentar tidak boleh kosong"
+                    }
                 }) {
                     Icon(
                         imageVector = Icons.Default.Send,
@@ -582,8 +620,144 @@ fun CommentBottomSheetContent(
             },
             singleLine = true
         )
+
+        // Display Error Message
+        if (errorMessage.isNotEmpty()) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
     }
 }
+
+
+//Setting Top Bar
+@Composable
+fun TopBarForum(
+    onBackClick: () -> Unit,
+    onSearchClick: (String) -> Unit,
+    onAddClick: () -> Unit,
+    navController: NavHostController
+) {
+    Column {
+        // Top Bar Row
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF13382C)),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { onBackClick() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.iconback),
+                    contentDescription = "Back",
+                    modifier = Modifier.size(30.dp),
+                    tint = Color.White
+                )
+            }
+
+            IconButton(onClick = { navController.navigate(Screen.Komunitas.route) }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.iconcommunity),
+                    contentDescription = "Community",
+                    modifier = Modifier.size(30.dp),
+                    tint = Color.White
+                )
+            }
+        }
+
+        // Search Bar
+        SearchBarForum(onSearchClick = onSearchClick, navController = navController)
+
+        // Tags Section (optional)
+        TagLineForum()
+    }
+}
+
+@Composable
+fun SearchBarForum(onSearchClick: (String) -> Unit, navController: NavHostController) {
+    var searchQuery by remember { mutableStateOf("") }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF13382C))
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = {
+                Text(
+                    text = "Search...",
+                    style = TextStyle(color = Color.Gray)
+                )
+            },
+            singleLine = true,
+            modifier = Modifier
+                .weight(1f)
+                .height(48.dp)
+                .background(Color.White, shape = RoundedCornerShape(12.dp)),
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = "Search"
+                )
+            },
+            shape = RoundedCornerShape(12.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        IconButton(onClick = {
+            navController.navigate(Screen.AddPost.route)
+        }) {
+            Icon(
+                painter = painterResource(id = R.drawable.iconaddfor),
+                contentDescription = "Add",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(50.dp)
+            )
+        }
+    }
+}
+
+//tagline untuk tren terbaru
+@Composable
+fun TagLineForum(){
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF13382C))
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp)
+    ) {
+        val categories = listOf("#Trending", "#Terbaru", "#Hamajagung", "#Musim", "#BibitJagung", "#Hama", "Panen")
+        items(categories) { category ->
+            Box(
+                modifier = Modifier
+                    .background(Color.White, shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(text = category, color = Color(0xFF5B8C51), fontSize = 10.sp)
+            }
+        }
+    }
+}
+//
+//@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+//@Composable
+//fun MainScreenPreview() {
+//    ForumScreen(navController = rememberNavController())
+//}
+
+
+
+
 
 
 
@@ -694,132 +868,6 @@ fun CommentBottomSheetContent(
 //        }
 //    }
 //}
-
-
-
-//Setting Top Bar
-@Composable
-fun TopBarForum(
-    onBackClick: () -> Unit,
-    onSearchClick: (String) -> Unit,
-    onAddClick: () -> Unit,
-    navController: NavHostController
-) {
-    Column {
-        // Top Bar Row
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF13382C)),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { onBackClick() }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.iconback),
-                    contentDescription = "Back",
-                    modifier = Modifier.size(30.dp),
-                    tint = Color.White
-                )
-            }
-
-            IconButton(onClick = { navController.navigate(Screen.Komunitas.route) }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.iconcommunity),
-                    contentDescription = "Community",
-                    modifier = Modifier.size(30.dp),
-                    tint = Color.White
-                )
-            }
-        }
-
-        // Search Bar
-        SearchBarForum(onSearchClick = onSearchClick, navController = navController)
-
-        // Tags Section (optional)
-        TagLineForum()
-    }
-}
-
-@Composable
-fun SearchBarForum(onSearchClick: (String) -> Unit, navController: NavHostController) {
-    var searchQuery by remember { mutableStateOf("") }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF13382C))
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            placeholder = {
-                Text(
-                    text = "Search...",
-                    style = TextStyle(color = Color.Gray)
-                )
-            },
-            singleLine = true,
-            modifier = Modifier
-                .weight(1f)
-                .height(48.dp)
-                .background(Color.White, shape = RoundedCornerShape(12.dp)),
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.Search,
-                    contentDescription = "Search"
-                )
-            },
-            shape = RoundedCornerShape(12.dp)
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        IconButton(onClick = {
-            navController.navigate(Screen.AddPost.route)
-        }) {
-            Icon(
-                painter = painterResource(id = R.drawable.iconaddfor),
-                contentDescription = "Add",
-                tint = Color.Unspecified,
-                modifier = Modifier.size(50.dp)
-            )
-        }
-    }
-}
-
-
-
-
-
-@Composable
-fun TagLineForum(){
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF13382C))
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(horizontal = 20.dp)
-    ) {
-        val categories = listOf("#Trending", "#Terbaru", "#Hamajagung", "#Musim", "#BibitJagung", "#Hama", "Panen")
-        items(categories) { category ->
-            Box(
-                modifier = Modifier
-                    .background(Color.White, shape = RoundedCornerShape(8.dp))
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Text(text = category, color = Color(0xFF5B8C51), fontSize = 10.sp)
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-fun MainScreenPreview() {
-    ForumScreen(navController = rememberNavController())
-}
 
 
 

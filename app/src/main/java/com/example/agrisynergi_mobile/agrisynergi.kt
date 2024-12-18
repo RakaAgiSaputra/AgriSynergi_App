@@ -217,9 +217,14 @@ fun AgrisynergiApp(
                     DetailMarketScreen(marketId = marketId, navController = navController)
                 }
             }
-            composable(Screen.Forum.route) {
-                ForumScreen(navController = navController)
+            composable(Screen.Forum.route) { backStackEntry ->
+                val idKomunitas = backStackEntry.arguments?.getInt("idKomunitas") ?: 0
+                ForumScreen(
+                    navController = navController,
+                    idKomunitas = idKomunitas
+                )
             }
+
             composable(Screen.Konsultasi.route) {
                 ChatScreen(navController= navController)
             }
