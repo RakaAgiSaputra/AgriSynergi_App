@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 //RetrofilClient
 class RetrofitClient1 {
     companion object {
-        private const val BASE_URL = "http://36.74.38.214:8080/" //ganti url Api
+        private const val BASE_URL = "https://gtk62vzp-3000.asse.devtunnels.ms/" //ganti url Api
 
         val instance: Api by lazy {
             val loggingInterceptor = HttpLoggingInterceptor().apply {

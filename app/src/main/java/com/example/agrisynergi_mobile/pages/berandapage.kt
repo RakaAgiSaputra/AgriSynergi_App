@@ -332,7 +332,7 @@ fun KalenderItem(
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = "http://36.74.38.214:8080/api/fileKalender/${kalender.gambar}",
+                    model = "https://gtk62vzp-3000.asse.devtunnels.ms/api/fileKalender/${kalender.gambar}",
                     error = painterResource(id = R.drawable.imagenotavail)
                 ),
                 contentDescription = "Gambar Kalender",
@@ -412,7 +412,7 @@ fun KalenderDetailDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 Image(
                     painter = rememberAsyncImagePainter(
-                        model = "http://36.74.38.214:8080/api/fileKalender/${kalender.gambar}",
+                        model = "https://gtk62vzp-3000.asse.devtunnels.ms/api/fileKalender/${kalender.gambar}",
                         error = painterResource(id = R.drawable.imagenotavail)
 
                     ),

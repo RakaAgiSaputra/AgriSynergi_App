@@ -535,21 +535,21 @@ fun BottomSheetMarking(
                     Column(
 
                     ) {
-                        if (selectedSawah != null) {
-                            Image(
-                                painter = rememberAsyncImagePainter(
-                                    model = "http://36.74.31.200:8080/api/fileSawah/${selectedSawah?.foto_lokasi}",
-                                    error = painterResource(id = R.drawable.imagenotavail)
-                                ),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(180.dp)
-                                    .clip(RoundedCornerShape(10.dp)),
-                                contentScale = ContentScale.Crop
-                            )
-
-                        }
+//                        if (selectedSawah != null) {
+//                            Image(
+//                                painter = rememberAsyncImagePainter(
+//                                    model = "http://36.74.31.200:8080/api/fileSawah/${selectedSawah?.foto_lokasi}",
+//                                    error = painterResource(id = R.drawable.imagenotavail)
+//                                ),
+//                                contentDescription = null,
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .height(180.dp)
+//                                    .clip(RoundedCornerShape(10.dp)),
+//                                contentScale = ContentScale.Crop
+//                            )
+//
+//                        }
 
 
                         Spacer(modifier = Modifier.height(16.dp))

@@ -26,6 +26,17 @@ data class Pagination(
 data class KomentarRequest(
     val id_user: Int,
     val id_komunitas: Int,
-    val deskripsi: String
+    val deskripsi: String,
+    val type: String? // Optional field
 )
 
+
+
+data class ApiResponse<T>(
+    val success: Boolean,
+    val code: Int,
+    val message: String,
+    val data: T?,
+    val pagination: Pagination?,
+    val errors: Any?
+)

@@ -115,7 +115,7 @@ fun ContentCommunity(user: User?) { // Make sure user can be null
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Check if user is not null and proceed with image loading
-        val imageUrl = user?.foto?.let { "http://36.74.38.214:8080/api/fileUsers/$it" }
+        val imageUrl = user?.foto?.let { "https://gtk62vzp-3000.asse.devtunnels.ms/api/fileUsers/$it" }
 
         // Remember the image painter with an error fallback
         val imagePainter = rememberAsyncImagePainter(

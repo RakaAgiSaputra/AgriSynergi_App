@@ -87,10 +87,16 @@ interface ApiService {
     @GET("komentator")
     suspend fun getKomentator(): Response<KomentatorResponse>
 
-    @POST("api/komentator")
+    @POST("komentator")
     suspend fun postKomentar(
         @Body komentarRequest: KomentarRequest
     ): Response<KomentatorResponse>
+
+
+    @POST("komentator") // Ganti endpoint sesuai kebutuhan
+    fun postKomentar(@Body requestBody: Map<String, String>): Call<Void>
+
+
 
 
 

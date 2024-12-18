@@ -135,7 +135,7 @@ interface Api {
 
 //RetrofilClient
 class RetrofitClient1 {
-    private val BASE_URL = "http://36.74.38.214:8080/"
+    private val BASE_URL = "https://gtk62vzp-3000.asse.devtunnels.ms/"
 
     val instance: Api by lazy {
         Retrofit.Builder()
